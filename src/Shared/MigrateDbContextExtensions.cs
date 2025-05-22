@@ -35,6 +35,12 @@ internal static class MigrateDbContextExtensions
         var logger = scopeServices.GetRequiredService<ILogger<TContext>>();
         var context = scopeServices.GetService<TContext>();
 
+        if (context == null)
+        {
+            logger.LogError("Unable to get service for {DbContextName}", typeof(TContext).Name);
+            return;
+        }
+
         using var activity = ActivitySource.StartActivity($"Migration operation {typeof(TContext).Name}");
 
         try
@@ -49,7 +55,7 @@ internal static class MigrateDbContextExtensions
         {
             logger.LogError(ex, "An error occurred while migrating the database used on context {DbContextName}", typeof(TContext).Name);
 
-            activity.SetExceptionTags(ex);
+            activity?.SetExceptionTags(ex);
 
             throw;
         }
@@ -67,7 +73,7 @@ internal static class MigrateDbContextExtensions
         }
         catch (Exception ex)
         {
-            activity.SetExceptionTags(ex);
+            activity?.SetExceptionTags(ex);
 
             throw;
         }

@@ -24,18 +24,26 @@ public class OrderStatusChangedToPaidDomainEventHandler : INotificationHandler<O
         OrderingApiTrace.LogOrderStatusUpdated(_logger, domainEvent.OrderId, OrderStatus.Paid);
 
         var order = await _orderRepository.GetAsync(domainEvent.OrderId);
-        var buyer = await _buyerRepository.FindByIdAsync(order.BuyerId.Value);
+        
+        if (order.BuyerId.HasValue)
+        {
+            var buyer = await _buyerRepository.FindByIdAsync(order.BuyerId.Value);
 
-        var orderStockList = domainEvent.OrderItems
-            .Select(orderItem => new OrderStockItem(orderItem.ProductId, orderItem.Units));
+            var orderStockList = domainEvent.OrderItems
+                .Select(orderItem => new OrderStockItem(orderItem.ProductId, orderItem.Units));
 
-        var integrationEvent = new OrderStatusChangedToPaidIntegrationEvent(
-            domainEvent.OrderId,
-            order.OrderStatus,
-            buyer.Name,
-            buyer.IdentityGuid,
-            orderStockList);
+            var integrationEvent = new OrderStatusChangedToPaidIntegrationEvent(
+                domainEvent.OrderId,
+                order.OrderStatus,
+                buyer.Name,
+                buyer.IdentityGuid,
+                orderStockList);
 
-        await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+            await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+        }
+        else
+        {
+            _logger.LogWarning("Order {OrderId} has no buyer assigned", order.Id);
+        }
     }
 }

@@ -31,7 +31,7 @@ public class ValidateOrAddBuyerAggregateWhenOrderStartedDomainEventHandler
         // REVIEW: The event this creates needs to be sent after SaveChanges has propagated the buyer Id. It currently only
         // works by coincidence. If we remove HiLo or if anything decides to yield earlier, it will break.
 
-        buyer.VerifyOrAddPaymentMethod(cardTypeId,
+        buyer?.VerifyOrAddPaymentMethod(cardTypeId,
                                         $"Payment Method on {DateTime.UtcNow}",
                                         domainEvent.CardNumber,
                                         domainEvent.CardSecurityNumber,
@@ -39,7 +39,7 @@ public class ValidateOrAddBuyerAggregateWhenOrderStartedDomainEventHandler
                                         domainEvent.CardExpiration,
                                         domainEvent.Order.Id);
 
-        if (!buyerExisted)
+        if (!buyerExisted && buyer != null)
         {
             _buyerRepository.Add(buyer);
         }
@@ -47,8 +47,15 @@ public class ValidateOrAddBuyerAggregateWhenOrderStartedDomainEventHandler
         await _buyerRepository.UnitOfWork
             .SaveEntitiesAsync(cancellationToken);
 
-        var integrationEvent = new OrderStatusChangedToSubmittedIntegrationEvent(domainEvent.Order.Id, domainEvent.Order.OrderStatus, buyer.Name, buyer.IdentityGuid);
-        await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
-        OrderingApiTrace.LogOrderBuyerAndPaymentValidatedOrUpdated(_logger, buyer.Id, domainEvent.Order.Id);
+        if (buyer != null)
+        {
+            var integrationEvent = new OrderStatusChangedToSubmittedIntegrationEvent(domainEvent.Order.Id, domainEvent.Order.OrderStatus, buyer.Name, buyer.IdentityGuid);
+            await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+            OrderingApiTrace.LogOrderBuyerAndPaymentValidatedOrUpdated(_logger, buyer.Id, domainEvent.Order.Id);
+        }
+        else
+        {
+            _logger.LogWarning("Buyer is null for order {OrderId}", domainEvent.Order.Id);
+        }
     }
 }

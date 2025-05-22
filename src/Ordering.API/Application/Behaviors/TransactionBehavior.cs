@@ -19,7 +19,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        var response = default(TResponse);
+        TResponse? response = default;
         var typeName = request.GetGenericTypeName();
 
         try
@@ -52,7 +52,7 @@ public class TransactionBehavior<TRequest, TResponse> : IPipelineBehavior<TReque
                 await _orderingIntegrationEventService.PublishEventsThroughEventBusAsync(transactionId);
             });
 
-            return response;
+            return response!;
         }
         catch (Exception ex)
         {
