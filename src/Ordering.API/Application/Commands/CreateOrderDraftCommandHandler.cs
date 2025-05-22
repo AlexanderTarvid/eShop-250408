@@ -22,7 +22,7 @@ public class CreateOrderDraftCommandHandler
 
 public record OrderDraftDTO
 {
-    public IEnumerable<OrderItemDTO> OrderItems { get; init; }
+    public IEnumerable<OrderItemDTO> OrderItems { get; init; } = Enumerable.Empty<OrderItemDTO>();
     public decimal Total { get; init; }
 
     public static OrderDraftDTO FromOrder(Order order)
@@ -47,7 +47,7 @@ public record OrderItemDTO
 {
     public int ProductId { get; init; }
 
-    public string ProductName { get; init; }
+    public string ProductName { get; init; } = string.Empty;
 
     public decimal UnitPrice { get; init; }
 
@@ -55,5 +55,5 @@ public record OrderItemDTO
 
     public int Units { get; init; }
 
-    public string PictureUrl { get; init; }
+    public string PictureUrl { get; init; } = string.Empty;
 }

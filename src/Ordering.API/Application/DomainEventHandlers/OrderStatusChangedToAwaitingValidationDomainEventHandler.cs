@@ -16,8 +16,8 @@ public class OrderStatusChangedToAwaitingValidationDomainEventHandler
     {
         _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _buyerRepository = buyerRepository;
-        _orderingIntegrationEventService = orderingIntegrationEventService;
+        _buyerRepository = buyerRepository ?? throw new ArgumentNullException(nameof(buyerRepository));
+        _orderingIntegrationEventService = orderingIntegrationEventService ?? throw new ArgumentNullException(nameof(orderingIntegrationEventService));
     }
 
     public async Task Handle(OrderStatusChangedToAwaitingValidationDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -25,12 +25,20 @@ public class OrderStatusChangedToAwaitingValidationDomainEventHandler
         OrderingApiTrace.LogOrderStatusUpdated(_logger, domainEvent.OrderId, OrderStatus.AwaitingValidation);
 
         var order = await _orderRepository.GetAsync(domainEvent.OrderId);
-        var buyer = await _buyerRepository.FindByIdAsync(order.BuyerId.Value);
+        
+        if (order.BuyerId.HasValue)
+        {
+            var buyer = await _buyerRepository.FindByIdAsync(order.BuyerId.Value);
 
-        var orderStockList = domainEvent.OrderItems
-            .Select(orderItem => new OrderStockItem(orderItem.ProductId, orderItem.Units));
+            var orderStockList = domainEvent.OrderItems
+                .Select(orderItem => new OrderStockItem(orderItem.ProductId, orderItem.Units));
 
-        var integrationEvent = new OrderStatusChangedToAwaitingValidationIntegrationEvent(order.Id, order.OrderStatus, buyer.Name, buyer.IdentityGuid, orderStockList);
-        await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+            var integrationEvent = new OrderStatusChangedToAwaitingValidationIntegrationEvent(order.Id, order.OrderStatus, buyer.Name, buyer.IdentityGuid, orderStockList);
+            await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+        }
+        else
+        {
+            _logger.LogWarning("Order {OrderId} has no buyer assigned", order.Id);
+        }
     }
 }

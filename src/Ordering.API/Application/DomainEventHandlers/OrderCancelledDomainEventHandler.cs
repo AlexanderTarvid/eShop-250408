@@ -25,9 +25,16 @@ public partial class OrderCancelledDomainEventHandler
         OrderingApiTrace.LogOrderStatusUpdated(_logger, domainEvent.Order.Id, OrderStatus.Cancelled);
 
         var order = await _orderRepository.GetAsync(domainEvent.Order.Id);
-        var buyer = await _buyerRepository.FindByIdAsync(order.BuyerId.Value);
-
-        var integrationEvent = new OrderStatusChangedToCancelledIntegrationEvent(order.Id, order.OrderStatus, buyer.Name, buyer.IdentityGuid);
-        await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+        
+        if (order.BuyerId.HasValue)
+        {
+            var buyer = await _buyerRepository.FindByIdAsync(order.BuyerId.Value);
+            var integrationEvent = new OrderStatusChangedToCancelledIntegrationEvent(order.Id, order.OrderStatus, buyer.Name, buyer.IdentityGuid);
+            await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+        }
+        else
+        {
+            _logger.LogWarning("Order {OrderId} has no buyer assigned", order.Id);
+        }
     }
 }

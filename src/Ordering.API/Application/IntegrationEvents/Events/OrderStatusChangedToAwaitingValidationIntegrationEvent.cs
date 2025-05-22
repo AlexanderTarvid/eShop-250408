@@ -4,9 +4,9 @@ public record OrderStatusChangedToAwaitingValidationIntegrationEvent : Integrati
 {
     public int OrderId { get; }
     public OrderStatus OrderStatus { get; }
-    public string BuyerName { get; }
-    public string BuyerIdentityGuid { get; }
-    public IEnumerable<OrderStockItem> OrderStockItems { get; }
+    public string BuyerName { get; } = string.Empty;
+    public string BuyerIdentityGuid { get; } = string.Empty;
+    public IEnumerable<OrderStockItem> OrderStockItems { get; } = Enumerable.Empty<OrderStockItem>();
 
     public OrderStatusChangedToAwaitingValidationIntegrationEvent(
         int orderId, OrderStatus orderStatus, string buyerName, string buyerIdentityGuid,
