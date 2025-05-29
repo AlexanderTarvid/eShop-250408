@@ -155,9 +155,39 @@ public class OrderMockService : IOrderService
     {
         await Task.Delay(10);
 
-        return MockOrders
-            .OrderByDescending(o => o.OrderNumber)
-            .ToArray();
+        return BubbleSortOrdersByOrderNumber(MockOrders);
+    }
+
+    private Models.Orders.Order[] BubbleSortOrdersByOrderNumber(List<Models.Orders.Order> orders)
+    {
+        // Create a copy of the list to avoid modifying the original
+        var ordersArray = orders.ToArray();
+        int n = ordersArray.Length;
+
+        // Optimized bubble sort implementation - sorting in descending order by OrderNumber
+        for (int i = 0; i < n - 1; i++)
+        {
+            bool swapped = false; // Flag to detect if any swap occurred
+
+            for (int j = 0; j < n - i - 1; j++)
+            {
+                // Compare OrderNumbers - swap if current is less than next (for descending order)
+                if (ordersArray[j].OrderNumber < ordersArray[j + 1].OrderNumber)
+                {
+                    // Swap elements
+                    var temp = ordersArray[j];
+                    ordersArray[j] = ordersArray[j + 1];
+                    ordersArray[j + 1] = temp;
+                    swapped = true;
+                }
+            }
+
+            // If no swaps were made, the array is already sorted
+            if (!swapped)
+                break;
+        }
+
+        return ordersArray;
     }
 
     public async Task<Models.Orders.Order> GetOrderAsync(int orderId)
