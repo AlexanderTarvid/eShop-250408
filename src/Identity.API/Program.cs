@@ -36,6 +36,13 @@ builder.Services.AddIdentityServer(options =>
 // TODO: Not recommended for production - you need to store your key material somewhere secure
 .AddDeveloperSigningCredential();
 
+// Configure redirect settings
+builder.Services.Configure<eShop.Identity.API.Configuration.RedirectSettings>(
+    builder.Configuration.GetSection(eShop.Identity.API.Configuration.RedirectSettings.SectionName));
+
+// Register redirect URI whitelist as singleton
+builder.Services.AddSingleton<HashSet<string>>(eShop.Identity.API.Services.RedirectUriWhitelistFactory.Create);
+
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
 builder.Services.AddTransient<IRedirectService, RedirectService>();
