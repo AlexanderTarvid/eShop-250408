@@ -5,12 +5,10 @@ namespace eShop.Identity.API.Services
     public class RedirectService : IRedirectService
     {
         private readonly HashSet<string> _whitelistedUris;
-        private readonly ILogger<RedirectService> _logger;
 
-        public RedirectService(HashSet<string> whitelistedUris, ILogger<RedirectService> logger)
+        public RedirectService(HashSet<string> whitelistedUris)
         {
             _whitelistedUris = whitelistedUris ?? throw new ArgumentNullException(nameof(whitelistedUris));
-            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public string ExtractRedirectUriFromReturnUrl(string url)
@@ -53,15 +51,13 @@ namespace eShop.Identity.API.Services
                 // Validate the redirect URI
                 if (!IsValidRedirectUri(redirectUri))
                 {
-                    _logger.LogWarning("Invalid or non-whitelisted redirect URI attempted: {RedirectUri}", redirectUri);
                     return "";
                 }
 
                 return redirectUri;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _logger.LogError(ex, "Error extracting redirect URI from return URL: {Url}", url);
                 return "";
             }
         }
