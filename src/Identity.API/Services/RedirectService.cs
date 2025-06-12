@@ -6,12 +6,10 @@ namespace eShop.Identity.API.Services
     public class RedirectService : IRedirectService
     {
         private readonly IRedirectUriWhitelistService _whitelistService;
-        private readonly ILogger<RedirectService> _logger;
 
-        public RedirectService(IRedirectUriWhitelistService whitelistService, ILogger<RedirectService> logger)
+        public RedirectService(IRedirectUriWhitelistService whitelistService)
         {
             _whitelistService = whitelistService;
-            _logger = logger;
         }
 
         public string ExtractRedirectUriFromReturnUrl(string url)
@@ -20,14 +18,12 @@ namespace eShop.Identity.API.Services
             {
                 if (string.IsNullOrWhiteSpace(url))
                 {
-                    _logger.LogWarning("Received null or empty URL");
                     return "";
                 }
 
                 // Parse the URL to extract query parameters safely
                 if (!Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
                 {
-                    _logger.LogWarning("Invalid URL format: {Url}", url);
                     return "";
                 }
 
@@ -35,7 +31,6 @@ namespace eShop.Identity.API.Services
                 var query = uri.Query;
                 if (string.IsNullOrEmpty(query))
                 {
-                    _logger.LogWarning("No query parameters found in URL");
                     return "";
                 }
 
@@ -45,7 +40,6 @@ namespace eShop.Identity.API.Services
                 // Look for redirect_uri parameter
                 if (!queryDict.TryGetValue("redirect_uri", out var redirectUriValues) || redirectUriValues.Count == 0)
                 {
-                    _logger.LogWarning("No redirect_uri parameter found in URL");
                     return "";
                 }
 
@@ -54,7 +48,6 @@ namespace eShop.Identity.API.Services
                 
                 if (string.IsNullOrWhiteSpace(redirectUri))
                 {
-                    _logger.LogWarning("Empty redirect_uri parameter");
                     return "";
                 }
 
@@ -64,7 +57,6 @@ namespace eShop.Identity.API.Services
                 // Validate that the decoded URI is well-formed
                 if (!Uri.TryCreate(decodedUri, UriKind.Absolute, out var parsedUri))
                 {
-                    _logger.LogWarning("Invalid redirect URI format: {RedirectUri}", decodedUri);
                     return "";
                 }
 
@@ -74,16 +66,13 @@ namespace eShop.Identity.API.Services
                 // Check if the URI is in the whitelist
                 if (!_whitelistService.IsAllowed(normalizedUri))
                 {
-                    _logger.LogWarning("Redirect URI not whitelisted: {RedirectUri}", normalizedUri);
                     return "";
                 }
 
-                _logger.LogInformation("Valid redirect URI extracted: {RedirectUri}", normalizedUri);
                 return normalizedUri;
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogError(ex, "Error extracting redirect URI from URL: {Url}", url);
                 return "";
             }
         }
