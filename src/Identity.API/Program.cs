@@ -1,4 +1,6 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using eShop.Identity.API.Services;
+
+var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
@@ -38,6 +40,10 @@ builder.Services.AddIdentityServer(options =>
 
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
+
+// Configure redirect options
+builder.Services.Configure<RedirectOptions>(
+    builder.Configuration.GetSection(RedirectOptions.SectionName));
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 
 var app = builder.Build();
