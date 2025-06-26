@@ -1,15 +1,8 @@
 ﻿namespace eShop.Ordering.API.Application.Commands;
 
 // Regular CommandHandler
-public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, bool>
+public class CancelOrderCommandHandler(IOrderRepository orderRepository) : IRequestHandler<CancelOrderCommand, bool>
 {
-    private readonly IOrderRepository _orderRepository;
-
-    public CancelOrderCommandHandler(IOrderRepository orderRepository)
-    {
-        _orderRepository = orderRepository;
-    }
-
     /// <summary>
     /// Handler which processes the command when
     /// customer executes cancel order from app
@@ -18,29 +11,23 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, boo
     /// <returns></returns>
     public async Task<bool> Handle(CancelOrderCommand command, CancellationToken cancellationToken)
     {
-        var orderToUpdate = await _orderRepository.GetAsync(command.OrderNumber);
+        var orderToUpdate = await orderRepository.GetAsync(command.OrderNumber);
         if (orderToUpdate == null)
         {
             return false;
         }
 
         orderToUpdate.SetCancelledStatus();
-        return await _orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+        return await orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
     }
 }
 
-
 // Use for Idempotency in Command process
-public class CancelOrderIdentifiedCommandHandler : IdentifiedCommandHandler<CancelOrderCommand, bool>
+public class CancelOrderIdentifiedCommandHandler(
+    IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<CancelOrderCommand, bool>> logger) : IdentifiedCommandHandler<CancelOrderCommand, bool>(mediator, requestManager, logger)
 {
-    public CancelOrderIdentifiedCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<CancelOrderCommand, bool>> logger)
-        : base(mediator, requestManager, logger)
-    {
-    }
-
     protected override bool CreateResultForDuplicateRequest()
     {
         return true; // Ignore duplicate requests for processing order.

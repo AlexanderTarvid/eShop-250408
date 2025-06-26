@@ -6,24 +6,12 @@
 /// </summary>
 /// <typeparam name="T">Type of the command handler that performs the operation if request is not duplicated</typeparam>
 /// <typeparam name="R">Return value of the inner command handler</typeparam>
-public abstract class IdentifiedCommandHandler<T, R> : IRequestHandler<IdentifiedCommand<T, R>, R>
+public abstract class IdentifiedCommandHandler<T, R>(
+    IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<T, R>> logger) : IRequestHandler<IdentifiedCommand<T, R>, R>
     where T : IRequest<R>
 {
-    private readonly IMediator _mediator;
-    private readonly IRequestManager _requestManager;
-    private readonly ILogger<IdentifiedCommandHandler<T, R>> _logger;
-
-    public IdentifiedCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<T, R>> logger)
-    {
-        ArgumentNullException.ThrowIfNull(logger);
-        _mediator = mediator;
-        _requestManager = requestManager;
-        _logger = logger;
-    }
-
     /// <summary>
     /// Creates the result value to return if a previous request was found
     /// </summary>
@@ -38,14 +26,14 @@ public abstract class IdentifiedCommandHandler<T, R> : IRequestHandler<Identifie
     /// <returns>Return value of inner command or default value if request same ID was found</returns>
     public async Task<R> Handle(IdentifiedCommand<T, R> message, CancellationToken cancellationToken)
     {
-        var alreadyExists = await _requestManager.ExistAsync(message.Id);
+        var alreadyExists = await requestManager.ExistAsync(message.Id);
         if (alreadyExists)
         {
             return CreateResultForDuplicateRequest();
         }
         else
         {
-            await _requestManager.CreateRequestForCommandAsync<T>(message.Id);
+            await requestManager.CreateRequestForCommandAsync<T>(message.Id);
             try
             {
                 var command = message.Command;
@@ -76,7 +64,7 @@ public abstract class IdentifiedCommandHandler<T, R> : IRequestHandler<Identifie
                         break;
                 }
 
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
                     commandName,
                     idProperty,
@@ -84,9 +72,9 @@ public abstract class IdentifiedCommandHandler<T, R> : IRequestHandler<Identifie
                     command);
 
                 // Send the embedded business command to mediator so it runs its related CommandHandler 
-                var result = await _mediator.Send(command, cancellationToken);
+                var result = await mediator.Send(command, cancellationToken);
 
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Command result: {@Result} - {CommandName} - {IdProperty}: {CommandId} ({@Command})",
                     result,
                     commandName,
