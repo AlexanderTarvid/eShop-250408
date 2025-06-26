@@ -1,30 +1,23 @@
 ﻿namespace eShop.Ordering.API.Application.DomainEventHandlers;
 
-public class OrderStatusChangedToPaidDomainEventHandler : INotificationHandler<OrderStatusChangedToPaidDomainEvent>
+public class OrderStatusChangedToPaidDomainEventHandler(
+    IOrderRepository orderRepository,
+    ILogger<OrderStatusChangedToPaidDomainEventHandler> logger,
+    IBuyerRepository buyerRepository,
+    IOrderingIntegrationEventService orderingIntegrationEventService) : INotificationHandler<OrderStatusChangedToPaidDomainEvent>
 {
-    private readonly IOrderRepository _orderRepository;
-    private readonly ILogger _logger;
-    private readonly IBuyerRepository _buyerRepository;
-    private readonly IOrderingIntegrationEventService _orderingIntegrationEventService;
-
-    public OrderStatusChangedToPaidDomainEventHandler(
-        IOrderRepository orderRepository,
-        ILogger<OrderStatusChangedToPaidDomainEventHandler> logger,
-        IBuyerRepository buyerRepository,
-        IOrderingIntegrationEventService orderingIntegrationEventService)
-    {
-        _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _buyerRepository = buyerRepository ?? throw new ArgumentNullException(nameof(buyerRepository));
-        _orderingIntegrationEventService = orderingIntegrationEventService ?? throw new ArgumentNullException(nameof(orderingIntegrationEventService));
-    }
 
     public async Task Handle(OrderStatusChangedToPaidDomainEvent domainEvent, CancellationToken cancellationToken)
     {
-        OrderingApiTrace.LogOrderStatusUpdated(_logger, domainEvent.OrderId, OrderStatus.Paid);
+        ArgumentNullException.ThrowIfNull(orderRepository);
+        ArgumentNullException.ThrowIfNull(logger);
+        ArgumentNullException.ThrowIfNull(buyerRepository);
+        ArgumentNullException.ThrowIfNull(orderingIntegrationEventService);
 
-        var order = await _orderRepository.GetAsync(domainEvent.OrderId);
-        var buyer = await _buyerRepository.FindByIdAsync(order.BuyerId.Value);
+        OrderingApiTrace.LogOrderStatusUpdated(logger, domainEvent.OrderId, OrderStatus.Paid);
+
+        var order = await orderRepository.GetAsync(domainEvent.OrderId);
+        var buyer = await buyerRepository.FindByIdAsync(order.BuyerId.Value);
 
         var orderStockList = domainEvent.OrderItems
             .Select(orderItem => new OrderStockItem(orderItem.ProductId, orderItem.Units));
@@ -36,6 +29,6 @@ public class OrderStatusChangedToPaidDomainEventHandler : INotificationHandler<O
             buyer.IdentityGuid,
             orderStockList);
 
-        await _orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
+        await orderingIntegrationEventService.AddAndSaveEventAsync(integrationEvent);
     }
 }
