@@ -27,15 +27,11 @@ public class SetPaidOrderStatusCommandHandler(IOrderRepository orderRepository) 
 
 
 // Use for Idempotency in Command process
-public class SetPaidIdentifiedOrderStatusCommandHandler : IdentifiedCommandHandler<SetPaidOrderStatusCommand, bool>
+public class SetPaidIdentifiedOrderStatusCommandHandler(
+    IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<SetPaidOrderStatusCommand, bool>> logger) : IdentifiedCommandHandler<SetPaidOrderStatusCommand, bool>(mediator, requestManager, logger)
 {
-    public SetPaidIdentifiedOrderStatusCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<SetPaidOrderStatusCommand, bool>> logger)
-        : base(mediator, requestManager, logger)
-    {
-    }
 
     protected override bool CreateResultForDuplicateRequest()
     {

@@ -24,15 +24,11 @@ public class CancelOrderCommandHandler(IOrderRepository orderRepository) : IRequ
 
 
 // Use for Idempotency in Command process
-public class CancelOrderIdentifiedCommandHandler : IdentifiedCommandHandler<CancelOrderCommand, bool>
+public class CancelOrderIdentifiedCommandHandler(
+    IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<CancelOrderCommand, bool>> logger) : IdentifiedCommandHandler<CancelOrderCommand, bool>(mediator, requestManager, logger)
 {
-    public CancelOrderIdentifiedCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<CancelOrderCommand, bool>> logger)
-        : base(mediator, requestManager, logger)
-    {
-    }
 
     protected override bool CreateResultForDuplicateRequest()
     {

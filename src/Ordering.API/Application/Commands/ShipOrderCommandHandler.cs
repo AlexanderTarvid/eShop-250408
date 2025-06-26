@@ -24,15 +24,11 @@ public class ShipOrderCommandHandler(IOrderRepository orderRepository) : IReques
 
 
 // Use for Idempotency in Command process
-public class ShipOrderIdentifiedCommandHandler : IdentifiedCommandHandler<ShipOrderCommand, bool>
+public class ShipOrderIdentifiedCommandHandler(
+    IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<ShipOrderCommand, bool>> logger) : IdentifiedCommandHandler<ShipOrderCommand, bool>(mediator, requestManager, logger)
 {
-    public ShipOrderIdentifiedCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<ShipOrderCommand, bool>> logger)
-        : base(mediator, requestManager, logger)
-    {
-    }
 
     protected override bool CreateResultForDuplicateRequest()
     {

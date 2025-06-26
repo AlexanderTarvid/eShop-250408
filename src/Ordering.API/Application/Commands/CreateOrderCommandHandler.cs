@@ -37,15 +37,11 @@ public class CreateOrderCommandHandler(
 
 
 // Use for Idempotency in Command process
-public class CreateOrderIdentifiedCommandHandler : IdentifiedCommandHandler<CreateOrderCommand, bool>
+public class CreateOrderIdentifiedCommandHandler(
+    IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<CreateOrderCommand, bool>> logger) : IdentifiedCommandHandler<CreateOrderCommand, bool>(mediator, requestManager, logger)
 {
-    public CreateOrderIdentifiedCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<CreateOrderCommand, bool>> logger)
-        : base(mediator, requestManager, logger)
-    {
-    }
 
     protected override bool CreateResultForDuplicateRequest()
     {
