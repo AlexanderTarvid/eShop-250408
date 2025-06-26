@@ -1,15 +1,8 @@
 ﻿namespace eShop.Ordering.API.Application.Commands;
 
 // Regular CommandHandler
-public class ShipOrderCommandHandler : IRequestHandler<ShipOrderCommand, bool>
+public class ShipOrderCommandHandler(IOrderRepository orderRepository) : IRequestHandler<ShipOrderCommand, bool>
 {
-    private readonly IOrderRepository _orderRepository;
-
-    public ShipOrderCommandHandler(IOrderRepository orderRepository)
-    {
-        _orderRepository = orderRepository;
-    }
-
     /// <summary>
     /// Handler which processes the command when
     /// administrator executes ship order from app
@@ -18,14 +11,14 @@ public class ShipOrderCommandHandler : IRequestHandler<ShipOrderCommand, bool>
     /// <returns></returns>
     public async Task<bool> Handle(ShipOrderCommand command, CancellationToken cancellationToken)
     {
-        var orderToUpdate = await _orderRepository.GetAsync(command.OrderNumber);
+        var orderToUpdate = await orderRepository.GetAsync(command.OrderNumber);
         if (orderToUpdate == null)
         {
             return false;
         }
 
         orderToUpdate.SetShippedStatus();
-        return await _orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+        return await orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
     }
 }
 
