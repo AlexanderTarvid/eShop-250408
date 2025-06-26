@@ -1,4 +1,5 @@
 ﻿namespace eShop.Ordering.API.Application.Validations;
+
 public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
 {
     public CreateOrderCommandValidator(ILogger<CreateOrderCommandValidator> logger)
@@ -21,12 +22,12 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
         }
     }
 
-    private bool BeValidExpirationDate(DateTime dateTime)
+    private static bool BeValidExpirationDate(DateTime dateTime)
     {
         return dateTime >= DateTime.UtcNow;
     }
 
-    private bool ContainOrderItems(IEnumerable<OrderItemDTO> orderItems)
+    private static bool ContainOrderItems(IEnumerable<OrderItemDTO> orderItems)
     {
         return orderItems.Any();
     }
