@@ -126,7 +126,8 @@ public static class CatalogApi
         [AsParameters] CatalogServices services,
         [Description("The name of the item to return")] string name,
         [Description("The type of items to return")] int? type,
-        [Description("The brand of items to return")] int? brand)
+        [Description("The brand of items to return")] int? brand,
+        [FromQuery(Name = "order")] string order = null)
     {
         var pageSize = paginationRequest.PageSize;
         var pageIndex = paginationRequest.PageIndex;
@@ -149,8 +150,17 @@ public static class CatalogApi
         var totalItems = await root
             .LongCountAsync();
 
+        // Apply ordering
+        if (order == "price")
+        {
+            root = root.OrderBy(c => c.Price).ThenBy(c => c.Name);
+        }
+        else
+        {
+            root = root.OrderBy(c => c.Name);
+        }
+
         var itemsOnPage = await root
-            .OrderBy(c => c.Name)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync();
