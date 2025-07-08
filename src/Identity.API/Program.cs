@@ -1,4 +1,7 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using eShop.Identity.API.Services;
+using Microsoft.Extensions.Options;
+
+var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
@@ -38,6 +41,14 @@ builder.Services.AddIdentityServer(options =>
 
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
+
+// Register options and singleton whitelist
+builder.Services.Configure<RedirectUriWhitelistOptions>(builder.Configuration);
+builder.Services.AddSingleton(provider =>
+{
+    var options = provider.GetRequiredService<IOptions<RedirectUriWhitelistOptions>>().Value;
+    return new HashSet<string>(options.RedirectUriWhitelist ?? new List<string>());
+});
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 
 var app = builder.Build();
