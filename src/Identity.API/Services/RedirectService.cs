@@ -1,24 +1,9 @@
-﻿using Microsoft.Extensions.Options;
-using System.Text.Encodings.Web;
-using System.Web;
-using System.Text.RegularExpressions;
+﻿using Microsoft.AspNetCore.WebUtilities;
 
 namespace eShop.Identity.API.Services
 {
-    public class RedirectUriWhitelistOptions
+    public class RedirectService(HashSet<string> whitelist) : IRedirectService
     {
-        public List<string> RedirectUriWhitelist { get; set; } = new();
-    }
-
-    public class RedirectService : IRedirectService
-    {
-        private readonly HashSet<string> _whitelist;
-
-        public RedirectService(HashSet<string> whitelist)
-        {
-            _whitelist = whitelist;
-        }
-
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
             try
@@ -26,41 +11,27 @@ namespace eShop.Identity.API.Services
                 if (string.IsNullOrWhiteSpace(url))
                     return string.Empty;
 
-                // Multiple encoding attack mitigation: decode repeatedly up to a safe limit
-                string decodedUrl = url;
-                for (int i = 0; i < 3; i++)
+                // Use ASP.NET Core's QueryHelpers to parse the query string
+                var uri = new Uri(url, UriKind.RelativeOrAbsolute);
+                string query = uri.IsAbsoluteUri ? uri.Query : url;
+                if (!query.Contains("redirect_uri"))
                 {
-                    var temp = System.Net.WebUtility.UrlDecode(decodedUrl);
-                    if (temp == decodedUrl) break;
-                    decodedUrl = temp;
+                    // Try to extract query from a relative URL
+                    var idx = url.IndexOf('?');
+                    if (idx >= 0)
+                        query = url.Substring(idx);
                 }
-
-                // Use regex to find the first redirect_uri parameter
-                var match = Regex.Match(decodedUrl, @"[?&]redirect_uri=([^&#]*)", RegexOptions.IgnoreCase);
-                if (!match.Success)
+                var queryDict = QueryHelpers.ParseQuery(query);
+                if (!queryDict.TryGetValue("redirect_uri", out var redirectUris) || redirectUris.Count == 0)
                     return string.Empty;
 
-                var redirectUriRaw = match.Groups[1].Value;
-                // Remove any trailing parameters
-                var ampIndex = redirectUriRaw.IndexOf('&');
-                if (ampIndex > -1)
-                    redirectUriRaw = redirectUriRaw.Substring(0, ampIndex);
+                // Only consider the first redirect_uri
+                string redirectUri = redirectUris[0];
 
-                // Decode the redirect URI value (again, up to a safe limit)
-                string redirectUri = redirectUriRaw;
-                for (int i = 0; i < 3; i++)
-                {
-                    var temp = System.Net.WebUtility.UrlDecode(redirectUri);
-                    if (temp == redirectUri) break;
-                    redirectUri = temp;
-                }
-
-                // Validate using native .NET URI parsing
                 if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var parsedUri))
                     return string.Empty;
 
-                // Check whitelist
-                if (_whitelist.Contains(parsedUri.ToString()))
+                if (whitelist.Contains(parsedUri.ToString()))
                     return parsedUri.ToString();
             }
             catch
