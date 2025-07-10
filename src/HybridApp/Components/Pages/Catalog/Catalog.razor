@@ -1,4 +1,4 @@
-﻿@page "/"
+@page "/"
 @inject NavigationManager Nav
 @inject eShop.HybridApp.Services.CatalogService CatalogService
 
@@ -45,6 +45,9 @@
     [SupplyParameterFromQuery(Name = "type")]
     public int? ItemTypeId { get; set; }
 
+    [SupplyParameterFromQuery(Name = "order")]
+    public string? Order { get; set; } = "name";
+
     CatalogResult? catalogResult;
 
     static IEnumerable<int> GetVisiblePageIndexes(CatalogResult result)
@@ -57,5 +60,18 @@
             PageSize,
             BrandId,
             ItemTypeId);
+
+        if (catalogResult != null)
+        {
+            switch ((Order ?? "name").ToLowerInvariant())
+            {
+                case "price":
+                    catalogResult = catalogResult with { Data = catalogResult.Data.OrderBy(i => i.Price).ToList() };
+                    break;
+                default:
+                    catalogResult = catalogResult with { Data = catalogResult.Data.OrderBy(i => i.Name).ToList() };
+                    break;
+            }
+        }
     }
 }
