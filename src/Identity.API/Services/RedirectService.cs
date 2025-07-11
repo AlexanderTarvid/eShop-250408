@@ -1,14 +1,8 @@
 namespace eShop.Identity.API.Services
 {
-    public class RedirectService : IRedirectService
+    public class RedirectService(HashSet<string> whitelistedUris) : IRedirectService
     {
-        private readonly HashSet<string> _whitelistedUris;
         private const int MaxDecodeRounds = 3;
-
-        public RedirectService(HashSet<string> whitelistedUris)
-        {
-            _whitelistedUris = whitelistedUris;
-        }
 
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
@@ -41,20 +35,12 @@ namespace eShop.Identity.API.Services
                 if (string.IsNullOrWhiteSpace(redirectUri))
                     return string.Empty;
 
-                // Defend against multiple encoding attacks
-                for (int i = 0; i < MaxDecodeRounds; i++)
-                {
-                    var decoded = System.Net.WebUtility.UrlDecode(redirectUri);
-                    if (decoded == redirectUri) break;
-                    redirectUri = decoded;
-                }
-
                 // Validate absolute URI
                 if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var parsedRedirectUri))
                     return string.Empty;
 
                 // Compare with whitelist (exact match)
-                if (_whitelistedUris.Contains(parsedRedirectUri.ToString()))
+                if (whitelistedUris.Contains(parsedRedirectUri.ToString()))
                     return parsedRedirectUri.ToString();
             }
             catch
