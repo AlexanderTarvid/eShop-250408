@@ -1,4 +1,4 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
@@ -38,6 +38,18 @@ builder.Services.AddIdentityServer(options =>
 
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
+// Register options for redirect URI whitelist
+builder.Services.Configure<Identity.API.Models.RedirectUriWhitelistOptions>(
+    builder.Configuration);
+
+// Register singleton HashSet<string> with whitelisted URIs
+builder.Services.AddSingleton(sp =>
+{
+    var options = sp.GetRequiredService<Microsoft.Extensions.Options.IOptions<Identity.API.Models.RedirectUriWhitelistOptions>>().Value;
+    return new HashSet<string>(options.RedirectUriWhitelist ?? new List<string>(), StringComparer.OrdinalIgnoreCase);
+});
+
+// Inject the HashSet into RedirectService
 builder.Services.AddTransient<IRedirectService, RedirectService>();
 
 var app = builder.Build();
