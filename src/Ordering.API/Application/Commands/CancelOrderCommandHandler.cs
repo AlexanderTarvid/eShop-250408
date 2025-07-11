@@ -1,14 +1,8 @@
-﻿namespace eShop.Ordering.API.Application.Commands;
+namespace eShop.Ordering.API.Application.Commands;
 
 // Regular CommandHandler
-public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, bool>
+public class CancelOrderCommandHandler(IOrderRepository orderRepository) : IRequestHandler<CancelOrderCommand, bool>
 {
-    private readonly IOrderRepository _orderRepository;
-
-    public CancelOrderCommandHandler(IOrderRepository orderRepository)
-    {
-        _orderRepository = orderRepository;
-    }
 
     /// <summary>
     /// Handler which processes the command when
@@ -18,14 +12,14 @@ public class CancelOrderCommandHandler : IRequestHandler<CancelOrderCommand, boo
     /// <returns></returns>
     public async Task<bool> Handle(CancelOrderCommand command, CancellationToken cancellationToken)
     {
-        var orderToUpdate = await _orderRepository.GetAsync(command.OrderNumber);
+        var orderToUpdate = await orderRepository.GetAsync(command.OrderNumber);
         if (orderToUpdate == null)
         {
             return false;
         }
 
         orderToUpdate.SetCancelledStatus();
-        return await _orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+        return await orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
     }
 }
 
