@@ -1,4 +1,4 @@
-﻿@inject CatalogService CatalogService
+@inject CatalogService CatalogService
 @inject NavigationManager Nav
 
 @if (catalogBrands is not null && catalogItemTypes is not null)
@@ -9,6 +9,19 @@
             Filters
         </div>
         <div class="catalog-search-types">
+            <div class="catalog-search-group">
+                <h3>Ordering</h3>
+                <div class="catalog-search-group-tags">
+                    <a href="@OrderUri("name")"
+                       class="catalog-search-tag @((string.IsNullOrEmpty(Order) || Order == "name") ? "active" : "")">
+                        Name (A-Z)
+                    </a>
+                    <a href="@OrderUri("price")"
+                       class="catalog-search-tag @(Order == "price" ? "active" : "")">
+                        Price (Asc)
+                    </a>
+                </div>
+            </div>
             <div class="catalog-search-group">
                 <h3>Brand</h3>
                 <div class="catalog-search-group-tags">
@@ -51,6 +64,7 @@
     IEnumerable<CatalogItemType>? catalogItemTypes;
     [Parameter] public int? BrandId { get; set; }
     [Parameter] public int? ItemTypeId { get; set; }
+    [Parameter] public string? Order { get; set; } = "name";
 
     protected override async Task OnInitializedAsync()
     {
@@ -65,11 +79,23 @@
     {
         { "page", null },
         { "brand", brandId },
+        { "type", ItemTypeId },
+        { "order", Order ?? "name" },
     });
 
     private string TypeUri(int? typeId) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
     {
         { "page", null },
+        { "brand", BrandId },
         { "type", typeId },
+        { "order", Order ?? "name" },
+    });
+
+    private string OrderUri(string? order) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
+    {
+        { "page", null },
+        { "brand", BrandId },
+        { "type", ItemTypeId },
+        { "order", order ?? "name" },
     });
 }

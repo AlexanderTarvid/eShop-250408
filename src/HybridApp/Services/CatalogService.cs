@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using System.Web;
 using eShop.WebAppComponents.Catalog;
 using eShop.WebAppComponents.Services;
@@ -16,9 +16,9 @@ public class CatalogService(HttpClient httpClient) : ICatalogService
         return httpClient.GetFromJsonAsync<CatalogItem>(uri);
     }
 
-    public async Task<CatalogResult> GetCatalogItems(int pageIndex, int pageSize, int? brand, int? type)
+    public async Task<CatalogResult> GetCatalogItems(int pageIndex, int pageSize, int? brand, int? type, string? order = null)
     {
-        var uri = GetAllCatalogItemsUri(remoteServiceBaseUrl, pageIndex, pageSize, brand, type);
+        var uri = GetAllCatalogItemsUri(remoteServiceBaseUrl, pageIndex, pageSize, brand, type, order);
         var result = await httpClient.GetFromJsonAsync<CatalogResult>($"{uri}&api-version=2.0");
         return result!;
     }
@@ -51,7 +51,7 @@ public class CatalogService(HttpClient httpClient) : ICatalogService
         return result!;
     }
 
-    private static string GetAllCatalogItemsUri(string baseUri, int pageIndex, int pageSize, int? brand, int? type)
+    private static string GetAllCatalogItemsUri(string baseUri, int pageIndex, int pageSize, int? brand, int? type, string? order = null)
     {
         string filterQs = string.Empty;
 
@@ -62,6 +62,10 @@ public class CatalogService(HttpClient httpClient) : ICatalogService
         if (brand.HasValue)
         {
             filterQs += $"brand={brand.Value}&";
+        }
+        if (!string.IsNullOrWhiteSpace(order))
+        {
+            filterQs += $"order={order}&";
         }
 
         return $"{baseUri}items?{filterQs}pageIndex={pageIndex}&pageSize={pageSize}&api-version=2.0";

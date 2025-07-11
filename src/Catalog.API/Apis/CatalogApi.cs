@@ -1,4 +1,4 @@
-﻿using System.ComponentModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
@@ -126,7 +126,8 @@ public static class CatalogApi
         [AsParameters] CatalogServices services,
         [Description("The name of the item to return")] string name,
         [Description("The type of items to return")] int? type,
-        [Description("The brand of items to return")] int? brand)
+        [Description("The brand of items to return")] int? brand,
+        [FromQuery(Name = "order")] string order = null)
     {
         var pageSize = paginationRequest.PageSize;
         var pageIndex = paginationRequest.PageIndex;
@@ -149,8 +150,17 @@ public static class CatalogApi
         var totalItems = await root
             .LongCountAsync();
 
+        // Determine ordering
+        if (!string.IsNullOrWhiteSpace(order) && order.ToLowerInvariant() == "price")
+        {
+            root = root.OrderBy(c => c.Price);
+        }
+        else
+        {
+            root = root.OrderBy(c => c.Name);
+        }
+
         var itemsOnPage = await root
-            .OrderBy(c => c.Name)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
             .ToListAsync();
