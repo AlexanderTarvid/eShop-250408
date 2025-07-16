@@ -8,7 +8,7 @@
 <SectionContent SectionName="page-header-subtitle">Start the season with the latest in clothing and equipment.</SectionContent>
 
 <div class="catalog">
-    <CatalogSearch BrandId="@BrandId" ItemTypeId="@ItemTypeId" />
+    <CatalogSearch BrandId="@BrandId" ItemTypeId="@ItemTypeId" OrderBy="@OrderBy" />
 
     @if (catalogResult is null)
     {
@@ -46,6 +46,9 @@
     [SupplyParameterFromQuery(Name = "type")]
     public int? ItemTypeId { get; set; }
 
+    [SupplyParameterFromQuery(Name = "orderBy")]
+    public string? OrderBy { get; set; }
+
     CatalogResult? catalogResult;
 
     static IEnumerable<int> GetVisiblePageIndexes(CatalogResult result)
@@ -53,10 +56,28 @@
 
     protected override async Task OnInitializedAsync()
     {
-        catalogResult = await CatalogService.GetCatalogItems(
+        var result = await CatalogService.GetCatalogItems(
             Page.GetValueOrDefault(1) - 1,
             PageSize,
             BrandId,
             ItemTypeId);
+        
+        // Apply client-side ordering if specified
+        if (!string.IsNullOrEmpty(OrderBy))
+        {
+            var orderedData = OrderBy.ToLowerInvariant() switch
+            {
+                "price" => result.Data.OrderBy(x => x.Price).ToList(),
+                _ => result.Data.OrderBy(x => x.Name).ToList()
+            };
+            
+            catalogResult = result with { Data = orderedData };
+        }
+        else
+        {
+            // Default ordering by name
+            var orderedData = result.Data.OrderBy(x => x.Name).ToList();
+            catalogResult = result with { Data = orderedData };
+        }
     }
 }
