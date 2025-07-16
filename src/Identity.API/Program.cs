@@ -1,4 +1,7 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+using eShop.Identity.API.Configuration;
+using eShop.Identity.API.Services;
+
+var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
@@ -35,6 +38,11 @@ builder.Services.AddIdentityServer(options =>
 .AddAspNetIdentity<ApplicationUser>()
 // TODO: Not recommended for production - you need to store your key material somewhere secure
 .AddDeveloperSigningCredential();
+
+builder.Services.Configure<RedirectUriOptions>(
+    builder.Configuration.GetSection(RedirectUriOptions.SectionName));
+
+builder.Services.AddSingleton<IRedirectUriWhitelistService, RedirectUriWhitelistService>();
 
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
