@@ -55,28 +55,11 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        var result = await CatalogService.GetCatalogItems(
+        catalogResult = await CatalogService.GetCatalogItems(
             Page.GetValueOrDefault(1) - 1,
             PageSize,
             BrandId,
-            ItemTypeId);
-        
-        // Apply client-side ordering if specified
-        if (!string.IsNullOrEmpty(OrderBy))
-        {
-            var orderedData = OrderBy.ToLowerInvariant() switch
-            {
-                "price" => result.Data.OrderBy(x => x.Price).ToList(),
-                _ => result.Data.OrderBy(x => x.Name).ToList()
-            };
-            
-            catalogResult = result with { Data = orderedData };
-        }
-        else
-        {
-            // Default ordering by name
-            var orderedData = result.Data.OrderBy(x => x.Name).ToList();
-            catalogResult = result with { Data = orderedData };
-        }
+            ItemTypeId,
+            OrderBy);
     }
 }
