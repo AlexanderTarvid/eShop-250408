@@ -39,7 +39,7 @@ public static class OrdersApi
         Guid requestId,
         T command,
         OrderServices services,
-        string errorMessage) where T : class
+        string errorMessage) where T : IRequest<bool>
     {
         if (requestId == Guid.Empty)
         {
@@ -48,11 +48,18 @@ public static class OrdersApi
 
         var identifiedCommand = new IdentifiedCommand<T, bool>(command, requestId);
 
+        var orderNumber = command switch
+        {
+            CancelOrderCommand cancelCmd => cancelCmd.OrderNumber,
+            ShipOrderCommand shipCmd => shipCmd.OrderNumber,
+            _ => 0
+        };
+
         services.Logger.LogInformation(
             "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
             identifiedCommand.GetGenericTypeName(),
-            nameof(identifiedCommand.Command.OrderNumber),
-            identifiedCommand.Command.OrderNumber,
+            "OrderNumber",
+            orderNumber,
             identifiedCommand);
 
         var commandResult = await services.Mediator.Send(identifiedCommand);
