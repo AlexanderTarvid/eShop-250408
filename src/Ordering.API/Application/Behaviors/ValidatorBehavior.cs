@@ -1,15 +1,11 @@
 ﻿namespace eShop.Ordering.API.Application.Behaviors;
 
-public class ValidatorBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
+public class ValidatorBehavior<TRequest, TResponse>(
+    IEnumerable<IValidator<TRequest>> validators,
+    ILogger<ValidatorBehavior<TRequest, TResponse>> logger) : IPipelineBehavior<TRequest, TResponse> where TRequest : IRequest<TResponse>
 {
-    private readonly ILogger<ValidatorBehavior<TRequest, TResponse>> _logger;
-    private readonly IEnumerable<IValidator<TRequest>> _validators;
-
-    public ValidatorBehavior(IEnumerable<IValidator<TRequest>> validators, ILogger<ValidatorBehavior<TRequest, TResponse>> logger)
-    {
-        _validators = validators;
-        _logger = logger;
-    }
+    private readonly ILogger<ValidatorBehavior<TRequest, TResponse>> _logger = logger;
+    private readonly IEnumerable<IValidator<TRequest>> _validators = validators;
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
