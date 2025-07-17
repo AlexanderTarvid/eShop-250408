@@ -1,17 +1,9 @@
-using System.Web;
 using Microsoft.AspNetCore.WebUtilities;
 
 namespace eShop.Identity.API.Services
 {
-    public class RedirectService : IRedirectService
+    public class RedirectService(IRedirectUriWhitelistService whitelistService) : IRedirectService
     {
-        private readonly IRedirectUriWhitelistService _whitelistService;
-
-        public RedirectService(IRedirectUriWhitelistService whitelistService)
-        {
-            _whitelistService = whitelistService;
-        }
-
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
@@ -19,54 +11,37 @@ namespace eShop.Identity.API.Services
 
             try
             {
-                // Parse the URL to extract query parameters safely
-                var uri = new Uri(url, UriKind.RelativeOrAbsolute);
-                
-                string queryString;
-                if (uri.IsAbsoluteUri)
-                {
-                    queryString = uri.Query;
-                }
-                else
-                {
-                    // Handle relative URLs by extracting query string portion
-                    var queryIndex = url.IndexOf('?');
-                    if (queryIndex == -1)
-                        return string.Empty;
-                    queryString = url.Substring(queryIndex);
-                }
-
-                // Parse query parameters using ASP.NET Core's safe query parser
-                var queryParams = QueryHelpers.ParseQuery(queryString);
+                // Parse the URL using native ASP.NET Core QueryHelpers
+                var queryParams = QueryHelpers.ParseQuery(url);
                 
                 if (!queryParams.TryGetValue("redirect_uri", out var redirectUriValues) || 
                     redirectUriValues.Count == 0)
                     return string.Empty;
 
-                // Take only the first redirect_uri to prevent multiple encoding attacks
+                // Take only the first redirect_uri to prevent multiple parameter attacks
                 var redirectUri = redirectUriValues.First();
                 
                 if (string.IsNullOrWhiteSpace(redirectUri))
                     return string.Empty;
 
-                // URL decode the redirect URI safely (handles multiple encoding)
-                var decodedUri = HttpUtility.UrlDecode(redirectUri);
+                // URL decode using native ASP.NET Core WebUtilities (handles multiple encoding)
+                var decodedUri = System.Net.WebUtility.UrlDecode(redirectUri);
                 
                 // Double decode to handle potential double encoding attacks
-                var fullyDecodedUri = HttpUtility.UrlDecode(decodedUri);
+                var fullyDecodedUri = System.Net.WebUtility.UrlDecode(decodedUri);
                 
-                // Validate that the URI is properly formed
+                // Validate that the URI is properly formed using native Uri class
                 if (!Uri.TryCreate(fullyDecodedUri, UriKind.Absolute, out var validatedUri))
                     return string.Empty;
 
                 // Check against whitelist
-                var whitelistedUris = _whitelistService.GetWhitelistedUris();
-                var normalizedUri = validatedUri.ToString().TrimEnd('/');
+                var whitelistedUris = whitelistService.GetWhitelistedUris();
+                var uriString = validatedUri.ToString();
                 
-                if (!whitelistedUris.Contains(normalizedUri))
+                if (!whitelistedUris.Contains(uriString))
                     return string.Empty;
 
-                return normalizedUri;
+                return uriString;
             }
             catch
             {

@@ -3,16 +3,11 @@ using Microsoft.Extensions.Options;
 
 namespace eShop.Identity.API.Services
 {
-    public class RedirectUriWhitelistService : IRedirectUriWhitelistService
+    public class RedirectUriWhitelistService(IOptions<RedirectUriOptions> options) : IRedirectUriWhitelistService
     {
-        private readonly HashSet<string> _whitelistedUris;
-
-        public RedirectUriWhitelistService(IOptions<RedirectUriOptions> options)
-        {
-            _whitelistedUris = new HashSet<string>(
-                options.Value.WhitelistedUris ?? new List<string>(),
-                StringComparer.OrdinalIgnoreCase);
-        }
+        private readonly HashSet<string> _whitelistedUris = new(
+            options.Value.WhitelistedUris ?? [],
+            StringComparer.OrdinalIgnoreCase);
 
         public HashSet<string> GetWhitelistedUris() => _whitelistedUris;
     }

@@ -4,6 +4,6 @@ namespace eShop.Identity.API.Configuration
     {
         public const string SectionName = "RedirectUriSettings";
         
-        public List<string> WhitelistedUris { get; set; } = new();
+        public List<string> WhitelistedUris { get; set; } = [];
     }
 }
