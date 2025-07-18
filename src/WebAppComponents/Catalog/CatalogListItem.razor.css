@@ -25,18 +25,37 @@
 .catalog-product .catalog-product-content {
     display: flex;
     padding: 0 0.75rem;
-    align-items: center;
-    gap: 0.5rem;
+    align-items: stretch;
     align-self: stretch;
 }
 
-.catalog-product-content .name {
+.catalog-product-content .product-info {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 0.25rem;
+}
+
+.catalog-product-content .first-line,
+.catalog-product-content .second-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.catalog-product-content .name-first,
+.catalog-product-content .name-second {
     color: #000;
     font-size: 1rem;
     font-style: normal;
     font-weight: 600;
     line-height: 150%;
     text-align: left;
+    flex-grow: 1;
+}
+
+.catalog-product-content .name-second {
+    font-weight: 400;
 }
 
 .catalog-product-content .price {
@@ -47,6 +66,23 @@
     font-weight: 600;
     line-height: 150%;
     margin-left: auto;
+    flex-shrink: 0;
+}
+
+.catalog-product-content .warehouse-status {
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 125%;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.catalog-product-content .warehouse-status.in-stock {
+    color: #16a34a;
+}
+
+.catalog-product-content .warehouse-status.out-of-stock {
+    color: #dc2626;
 }
 
 

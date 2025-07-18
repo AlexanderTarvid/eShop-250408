@@ -806,5 +806,13 @@
     "Name": "Trek Xtreme Hiking Shoes",
     "Description": "The Trek Xtreme hiking shoes by Raptor Elite are built to endure any trail. With their durable leather upper and rugged rubber sole, they offer excellent traction and protection. These shoes come in a timeless brown color that adds a touch of style to your outdoor adventures.",
     "Price": 135.99
+  },
+  {
+    "Id": 102,
+    "Type": "Electronics",
+    "Brand": "TechGear",
+    "Name": "Abcdefghijklmnopqrstuvwxyz Ultimate Multi Sensor",
+    "Description": "The ultimate multi-sensor device featuring advanced technology for outdoor enthusiasts. This comprehensive device includes GPS, altimeter, barometer, compass, temperature sensor, humidity detector, and emergency beacon functionality all in one compact, waterproof design.",
+    "Price": 249.99
   }
 ]

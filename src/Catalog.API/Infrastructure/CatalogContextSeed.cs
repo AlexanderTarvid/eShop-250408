@@ -49,7 +49,7 @@ public partial class CatalogContextSeed(
                 Price = source.Price,
                 CatalogBrandId = brandIdsByName[source.Brand],
                 CatalogTypeId = typeIdsByName[source.Type],
-                AvailableStock = 100,
+                AvailableStock = source.Id == 99 ? 0 : 100, // Set Adventurer GPS Watch to 0 stock
                 MaxStockThreshold = 200,
                 RestockThreshold = 10,
                 PictureFileName = $"{source.Id}.webp",
