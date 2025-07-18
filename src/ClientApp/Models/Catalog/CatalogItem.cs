@@ -12,4 +12,5 @@ public class CatalogItem
     public CatalogBrand CatalogBrand { get; set; }
     public int CatalogTypeId { get; set; }
     public CatalogType CatalogType { get; set; }
+    public int AvailableStock { get; set; }
 }

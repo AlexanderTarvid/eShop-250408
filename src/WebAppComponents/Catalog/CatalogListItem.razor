@@ -7,19 +7,9 @@
             <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
         </span>
         <span class='catalog-product-content'>
-            <div class='product-info'>
-                <div class='first-line'>
-                    <span class='name-first'>@GetFirstLineTitle()</span>
-                    <span class='price'>$@Item.Price.ToString("0.00")</span>
-                </div>
-                <div class='second-line'>
-                    @if (!string.IsNullOrEmpty(GetSecondLineTitle()))
-                    {
-                        <span class='name-second'>@GetSecondLineTitle()</span>
-                    }
-                    <span class='warehouse-status @GetStockStatusClass()'>@GetStockStatusText()</span>
-                </div>
-            </div>
+            <span class='name'>@Item.Name</span>
+            <span class='price'>$@Item.Price.ToString("0.00")</span>
+            <span class='warehouse-status @GetStockStatusClass()'>@GetStockStatusText()</span>
         </span>
     </a>
 </div>
@@ -30,30 +20,6 @@
 
     [Parameter]
     public bool IsLoggedIn { get; set; }
-
-    private string GetFirstLineTitle()
-    {
-        if (string.IsNullOrEmpty(Item.Name))
-            return "";
-
-        var words = Item.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (words.Length <= 3)
-            return Item.Name;
-
-        return string.Join(' ', words.Take(3));
-    }
-
-    private string GetSecondLineTitle()
-    {
-        if (string.IsNullOrEmpty(Item.Name))
-            return "";
-
-        var words = Item.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        if (words.Length <= 3)
-            return "";
-
-        return string.Join(' ', words.Skip(3));
-    }
 
     private string GetStockStatusText()
     {
