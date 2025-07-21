@@ -49,17 +49,33 @@ public partial class CatalogContextSeed(
                 Price = source.Price,
                 CatalogBrandId = brandIdsByName[source.Brand],
                 CatalogTypeId = typeIdsByName[source.Type],
-                AvailableStock = 100,
+                AvailableStock = source.Name == "Adventurer GPS Watch" ? 0 : 100,
                 MaxStockThreshold = 200,
                 RestockThreshold = 10,
                 PictureFileName = $"{source.Id}.webp",
-            }).ToArray();
+            }).ToList();
+
+            // Add a new product with a very long multi-word title starting with 'Ab'
+            int maxTitleLength = 255; // Adjust if DB allows more
+            string longTitle = "Ab " + string.Join(" ", Enumerable.Repeat("word", (maxTitleLength - 3) / 5));
+            catalogItems.Add(new CatalogItem
+            {
+                Name = longTitle,
+                Description = "A product with a very long title for testing.",
+                Price = 123.45M,
+                CatalogBrandId = brandIdsByName.Values.First(),
+                CatalogTypeId = typeIdsByName.Values.First(),
+                AvailableStock = 50,
+                MaxStockThreshold = 200,
+                RestockThreshold = 10,
+                PictureFileName = "longtitle.webp",
+            });
 
             if (catalogAI.IsEnabled)
             {
-                logger.LogInformation("Generating {NumItems} embeddings", catalogItems.Length);
+                logger.LogInformation("Generating {NumItems} embeddings", catalogItems.Count);
                 IReadOnlyList<Vector> embeddings = await catalogAI.GetEmbeddingsAsync(catalogItems);
-                for (int i = 0; i < catalogItems.Length; i++)
+                for (int i = 0; i < catalogItems.Count; i++)
                 {
                     catalogItems[i].Embedding = embeddings[i];
                 }

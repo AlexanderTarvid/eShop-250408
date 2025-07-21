@@ -21,7 +21,9 @@
             <form class="add-to-cart" method="post" @formname="add-to-cart" @onsubmit="@AddToCartAsync" data-enhance="@isLoggedIn">
                 <AntiforgeryToken />
                 <span class="price">$@item.Price.ToString("0.00")</span>
-
+                <span class="warehouse-status-detail @(item.AvailableStock > 0 ? "in-stock" : "out-of-stock")">
+                    @(item.AvailableStock > 0 ? $"In stock ({item.AvailableStock} units)" : "Out of stock")
+                </span>
                 @if (isLoggedIn)
                 {
                     <button type="submit" title="Add to basket">

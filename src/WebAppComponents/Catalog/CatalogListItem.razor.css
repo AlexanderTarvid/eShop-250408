@@ -49,6 +49,45 @@
     margin-left: auto;
 }
 
+/* Add styles for warehouse status and two-line title layout */
+.catalog-product-content {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.1rem;
+}
+.title-row, .status-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%;
+}
+.title-row .name {
+    flex: 1 1 auto;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.title-row .price {
+    margin-left: auto;
+}
+.status-row .name-cont {
+    flex: 1 1 auto;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.status-row .warehouse-status {
+    margin-left: auto;
+    font-weight: 600;
+}
+.status-row .warehouse-status.in-stock {
+    color: #228B22;
+}
+.status-row .warehouse-status.out-of-stock {
+    color: #B22222;
+}
 
 @media only screen and (max-width: 480px) { 
     .catalog-item {

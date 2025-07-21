@@ -7,8 +7,18 @@
             <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
         </span>
         <span class='catalog-product-content'>
-            <span class='name'>@Item.Name</span>
-            <span class='price'>$@Item.Price.ToString("0.00")</span>
+            @* First line: beginning of title (left), price (right) *@
+            <span class='title-row'>
+                <span class='name'>@GetFirstLine(Item.Name)</span>
+                <span class='price'>$@Item.Price.ToString("0.00")</span>
+            </span>
+            @* Second line: continuation of title (if any), warehouse status (right) *@
+            <span class='status-row'>
+                <span class='name-cont'>@GetSecondLine(Item.Name)</span>
+                <span class='warehouse-status @(Item.AvailableStock > 0 ? "in-stock" : "out-of-stock")'>
+                    @(Item.AvailableStock > 0 ? "In stock" : "Out of stock")
+                </span>
+            </span>
         </span>
     </a>
 </div>
@@ -19,4 +29,22 @@
 
     [Parameter]
     public bool IsLoggedIn { get; set; }
+
+    // Split title into two lines without breaking words
+    private string GetFirstLine(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title)) return string.Empty;
+        var words = title.Split(' ');
+        if (words.Length == 1) return title;
+        int half = (int)Math.Ceiling(words.Length / 2.0);
+        return string.Join(" ", words.Take(half));
+    }
+    private string GetSecondLine(string title)
+    {
+        if (string.IsNullOrWhiteSpace(title)) return string.Empty;
+        var words = title.Split(' ');
+        if (words.Length == 1) return string.Empty;
+        int half = (int)Math.Ceiling(words.Length / 2.0);
+        return string.Join(" ", words.Skip(half));
+    }
 }
