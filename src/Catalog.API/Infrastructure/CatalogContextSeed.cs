@@ -56,8 +56,16 @@ public partial class CatalogContextSeed(
             }).ToList();
 
             // Add a new product with a very long multi-word title starting with 'Ab'
-            int maxTitleLength = 255; // Adjust if DB allows more
-            string longTitle = "Ab " + string.Join(" ", Enumerable.Repeat("word", (maxTitleLength - 3) / 5));
+            int maxTitleLength = typeof(CatalogItem)
+                .GetProperty("Name")
+                ?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.MaxLengthAttribute), false)
+                .OfType<System.ComponentModel.DataAnnotations.MaxLengthAttribute>()
+                .FirstOrDefault()?.Length ?? 200;
+            string prefix = "Ab ";
+            string word = "word ";
+            int maxWords = (maxTitleLength - prefix.Length) / word.Length;
+            string longTitle = prefix + string.Concat(Enumerable.Repeat(word, maxWords)).TrimEnd();
+            if (longTitle.Length > maxTitleLength) longTitle = longTitle.Substring(0, maxTitleLength);
             catalogItems.Add(new CatalogItem
             {
                 Name = longTitle,

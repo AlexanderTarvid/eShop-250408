@@ -658,6 +658,7 @@
             "format": "int32"
           },
           "name": {
+            "maxLength": 200,
             "type": "string",
             "nullable": true
           },
