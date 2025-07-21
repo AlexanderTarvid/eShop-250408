@@ -24,28 +24,14 @@ public static class OrdersApi
         CancelOrderCommand command,
         [AsParameters] OrderServices services)
     {
-        if (requestId == Guid.Empty)
-        {
-            return TypedResults.BadRequest("Empty GUID is not valid for request ID");
-        }
-
-        var requestCancelOrder = new IdentifiedCommand<CancelOrderCommand, bool>(command, requestId);
-
-        services.Logger.LogInformation(
-            "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
-            requestCancelOrder.GetGenericTypeName(),
-            nameof(requestCancelOrder.Command.OrderNumber),
-            requestCancelOrder.Command.OrderNumber,
-            requestCancelOrder);
-
-        var commandResult = await services.Mediator.Send(requestCancelOrder);
-
-        if (!commandResult)
-        {
-            return TypedResults.Problem(detail: "Cancel order failed to process.", statusCode: 500);
-        }
-
-        return TypedResults.Ok();
+        return await ShipOrCancelOrderAsync(
+            requestId,
+            command,
+            services,
+            c => c.OrderNumber,
+            "OrderNumber",
+            "Cancel order failed to process.",
+            "Empty GUID is not valid for request ID");
     }
 
     public static async Task<Results<Ok, BadRequest<string>, ProblemHttpResult>> ShipOrderAsync(
@@ -53,25 +39,55 @@ public static class OrdersApi
         ShipOrderCommand command,
         [AsParameters] OrderServices services)
     {
+        return await ShipOrCancelOrderAsync(
+            requestId,
+            command,
+            services,
+            c => c.OrderNumber,
+            "OrderNumber",
+            "Ship order failed to process.",
+            "Empty GUID is not valid for request ID");
+    }
+
+    private static async Task<Results<Ok, BadRequest<string>, ProblemHttpResult>> ShipOrCancelOrderAsync<TCommand>(
+        Guid requestId,
+        TCommand command,
+        OrderServices services,
+        Func<TCommand, object> orderNumberSelector,
+        string idPropertyName,
+        string errorMessage,
+        string badRequestMessage)
+    {
         if (requestId == Guid.Empty)
         {
-            return TypedResults.BadRequest("Empty GUID is not valid for request ID");
+            return TypedResults.BadRequest(badRequestMessage);
         }
 
-        var requestShipOrder = new IdentifiedCommand<ShipOrderCommand, bool>(command, requestId);
+        var identifiedCommandType = typeof(IdentifiedCommand<,>).MakeGenericType(typeof(TCommand), typeof(bool));
+        var identifiedCommand = Activator.CreateInstance(identifiedCommandType, command, requestId);
+
+        // Logging
+        var getGenericTypeNameMethod = identifiedCommandType.GetMethod("GetGenericTypeName");
+        var commandName = getGenericTypeNameMethod?.Invoke(identifiedCommand, null) ?? identifiedCommandType.Name;
+        var orderNumber = orderNumberSelector(command);
 
         services.Logger.LogInformation(
             "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
-            requestShipOrder.GetGenericTypeName(),
-            nameof(requestShipOrder.Command.OrderNumber),
-            requestShipOrder.Command.OrderNumber,
-            requestShipOrder);
+            commandName,
+            idPropertyName,
+            orderNumber,
+            identifiedCommand);
 
-        var commandResult = await services.Mediator.Send(requestShipOrder);
+        // Send command
+        var sendMethod = services.Mediator.GetType().GetMethod("Send", new[] { typeof(object), typeof(CancellationToken) });
+        var sendTask = (Task)sendMethod.Invoke(services.Mediator, new object[] { identifiedCommand, CancellationToken.None });
+        await sendTask.ConfigureAwait(false);
+        var resultProperty = sendTask.GetType().GetProperty("Result");
+        var commandResult = (bool)resultProperty.GetValue(sendTask);
 
         if (!commandResult)
         {
-            return TypedResults.Problem(detail: "Ship order failed to process.", statusCode: 500);
+            return TypedResults.Problem(detail: errorMessage, statusCode: 500);
         }
 
         return TypedResults.Ok();
