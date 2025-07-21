@@ -30,6 +30,8 @@ public static class OrdersApi
             services,
             c => c.OrderNumber,
             "OrderNumber",
+            (cmd, reqId) => new IdentifiedCommand<CancelOrderCommand, bool>(cmd, reqId),
+            cmd => cmd.GetGenericTypeName(),
             "Cancel order failed to process.",
             "Empty GUID is not valid for request ID");
     }
@@ -45,6 +47,8 @@ public static class OrdersApi
             services,
             c => c.OrderNumber,
             "OrderNumber",
+            (cmd, reqId) => new IdentifiedCommand<ShipOrderCommand, bool>(cmd, reqId),
+            cmd => cmd.GetGenericTypeName(),
             "Ship order failed to process.",
             "Empty GUID is not valid for request ID");
     }
@@ -55,20 +59,19 @@ public static class OrdersApi
         OrderServices services,
         Func<TCommand, object> orderNumberSelector,
         string idPropertyName,
+        Func<TCommand, Guid, IdentifiedCommand<TCommand, bool>> identifiedCommandFactory,
+        Func<IdentifiedCommand<TCommand, bool>, string> commandNameSelector,
         string errorMessage,
         string badRequestMessage)
+        where TCommand : MediatR.IRequest<bool>
     {
         if (requestId == Guid.Empty)
         {
             return TypedResults.BadRequest(badRequestMessage);
         }
 
-        var identifiedCommandType = typeof(IdentifiedCommand<,>).MakeGenericType(typeof(TCommand), typeof(bool));
-        var identifiedCommand = Activator.CreateInstance(identifiedCommandType, command, requestId);
-
-        // Logging
-        var getGenericTypeNameMethod = identifiedCommandType.GetMethod("GetGenericTypeName");
-        var commandName = getGenericTypeNameMethod?.Invoke(identifiedCommand, null) ?? identifiedCommandType.Name;
+        var identifiedCommand = identifiedCommandFactory(command, requestId);
+        var commandName = commandNameSelector(identifiedCommand);
         var orderNumber = orderNumberSelector(command);
 
         services.Logger.LogInformation(
@@ -78,12 +81,7 @@ public static class OrdersApi
             orderNumber,
             identifiedCommand);
 
-        // Send command
-        var sendMethod = services.Mediator.GetType().GetMethod("Send", new[] { typeof(object), typeof(CancellationToken) });
-        var sendTask = (Task)sendMethod.Invoke(services.Mediator, new object[] { identifiedCommand, CancellationToken.None });
-        await sendTask.ConfigureAwait(false);
-        var resultProperty = sendTask.GetType().GetProperty("Result");
-        var commandResult = (bool)resultProperty.GetValue(sendTask);
+        var commandResult = await services.Mediator.Send(identifiedCommand);
 
         if (!commandResult)
         {
