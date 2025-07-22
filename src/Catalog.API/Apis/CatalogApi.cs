@@ -131,7 +131,9 @@ public static class CatalogApi
         var pageSize = paginationRequest.PageSize;
         var pageIndex = paginationRequest.PageIndex;
 
-        var root = (IQueryable<CatalogItem>)services.Context.CatalogItems;
+        var root = (IQueryable<CatalogItem>)services.Context.CatalogItems
+            .Include(c => c.CatalogBrand)
+            .Include(c => c.CatalogType);
 
         if (name is not null)
         {
@@ -163,7 +165,11 @@ public static class CatalogApi
         [AsParameters] CatalogServices services,
         [Description("List of ids for catalog items to return")] int[] ids)
     {
-        var items = await services.Context.CatalogItems.Where(item => ids.Contains(item.Id)).ToListAsync();
+        var items = await services.Context.CatalogItems
+            .Include(item => item.CatalogBrand)
+            .Include(item => item.CatalogType)
+            .Where(item => ids.Contains(item.Id))
+            .ToListAsync();
         return TypedResults.Ok(items);
     }
 
@@ -180,7 +186,10 @@ public static class CatalogApi
             });
         }
 
-        var item = await services.Context.CatalogItems.Include(ci => ci.CatalogBrand).SingleOrDefaultAsync(ci => ci.Id == id);
+        var item = await services.Context.CatalogItems
+            .Include(ci => ci.CatalogBrand)
+            .Include(ci => ci.CatalogType)
+            .SingleOrDefaultAsync(ci => ci.Id == id);
 
         if (item == null)
         {
@@ -259,7 +268,7 @@ public static class CatalogApi
         if (services.Logger.IsEnabled(LogLevel.Debug))
         {
             var itemsWithDistance = await services.Context.CatalogItems
-                .Select(c => new { Item = c, Distance = c.Embedding.CosineDistance(vector) })
+                .Select(c => new { ItemId = c.Id, Item = c, Distance = c.Embedding.CosineDistance(vector) })
                 .OrderBy(c => c.Distance)
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)
@@ -267,15 +276,33 @@ public static class CatalogApi
 
             services.Logger.LogDebug("Results from {text}: {results}", text, string.Join(", ", itemsWithDistance.Select(i => $"{i.Item.Name} => {i.Distance}")));
 
-            itemsOnPage = itemsWithDistance.Select(i => i.Item).ToList();
+            var itemIds = itemsWithDistance.Select(i => i.ItemId).ToList();
+            itemsOnPage = await services.Context.CatalogItems
+                .Include(c => c.CatalogBrand)
+                .Include(c => c.CatalogType)
+                .Where(c => itemIds.Contains(c.Id))
+                .ToListAsync();
+            
+            // Maintain the order from the distance calculation
+            itemsOnPage = itemIds.Select(id => itemsOnPage.First(item => item.Id == id)).ToList();
         }
         else
         {
-            itemsOnPage = await services.Context.CatalogItems
+            var orderedIds = await services.Context.CatalogItems
                 .OrderBy(c => c.Embedding.CosineDistance(vector))
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)
+                .Select(c => c.Id)
                 .ToListAsync();
+
+            itemsOnPage = await services.Context.CatalogItems
+                .Include(c => c.CatalogBrand)
+                .Include(c => c.CatalogType)
+                .Where(c => orderedIds.Contains(c.Id))
+                .ToListAsync();
+            
+            // Maintain the order from the distance calculation
+            itemsOnPage = orderedIds.Select(id => itemsOnPage.First(item => item.Id == id)).ToList();
         }
 
         return TypedResults.Ok(new PaginatedItems<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage));

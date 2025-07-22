@@ -7,23 +7,19 @@
             <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
         </span>
         <span class='catalog-product-content'>
-            <div class='product-info'>
-                <div class='title-price-row'>
-                    <span class='name'>@Item.Name</span>
-                    <span class='price'>$@Item.Price.ToString("0.00")</span>
-                </div>
-                <div class='stock-row'>
-                    <span class='stock-status @(Item.AvailableStock > 0 ? "in-stock" : "out-of-stock")'>
-                        @if (Item.AvailableStock > 0)
-                        {
-                            <text>In stock</text>
-                        }
-                        else
-                        {
-                            <text>Out of stock</text>
-                        }
-                    </span>
-                </div>
+            <div class='product-text-container'>
+                <span class='price'>$@Item.Price.ToString("0.00")</span>
+                <span class='stock-status @(Item.AvailableStock > 0 ? "in-stock" : "out-of-stock")'>
+                    @if (Item.AvailableStock > 0)
+                    {
+                        <text>In stock</text>
+                    }
+                    else
+                    {
+                        <text>Out of stock</text>
+                    }
+                </span>
+                <div class='name'>@Item.Name</div>
             </div>
         </span>
     </a>
