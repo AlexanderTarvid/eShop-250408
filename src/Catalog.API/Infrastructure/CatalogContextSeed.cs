@@ -49,9 +49,10 @@ public partial class CatalogContextSeed(
                 Price = source.Price,
                 CatalogBrandId = brandIdsByName[source.Brand],
                 CatalogTypeId = typeIdsByName[source.Type],
-                AvailableStock = 100,
-                MaxStockThreshold = 200,
-                RestockThreshold = 10,
+                AvailableStock = source.AvailableStock ?? 100,
+                MaxStockThreshold = source.MaxStockThreshold ?? 200,
+                RestockThreshold = source.RestockThreshold ?? 10,
+                OnReorder = source.OnReorder ?? false,
                 PictureFileName = $"{source.Id}.webp",
             }).ToArray();
 
@@ -79,5 +80,9 @@ public partial class CatalogContextSeed(
         public string Name { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
+        public int? AvailableStock { get; set; }
+        public int? RestockThreshold { get; set; }
+        public int? MaxStockThreshold { get; set; }
+        public bool? OnReorder { get; set; }
     }
 }

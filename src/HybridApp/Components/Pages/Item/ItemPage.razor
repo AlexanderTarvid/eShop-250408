@@ -20,6 +20,16 @@
             </p>
             <form class="add-to-cart" >
                 <span class="price">$@item.Price.ToString("0.00")</span>
+                <span class="stock-status @(item.AvailableStock > 0 ? "in-stock" : "out-of-stock")">
+                    @if (item.AvailableStock > 0)
+                    {
+                        <text>In stock (@item.AvailableStock units)</text>
+                    }
+                    else
+                    {
+                        <text>Out of stock</text>
+                    }
+                </span>
             </form>
 
         @*     @if (numInCart > 0)

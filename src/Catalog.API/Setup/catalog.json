@@ -789,7 +789,11 @@
     "Brand": "Solstix",
     "Name": "Adventurer GPS Watch",
     "Description": "Take navigation to the next level with the Solstix Adventurer GPS Watch. This sleek and durable watch, in midnight blue, features a built-in GPS, altimeter, and compass, allowing you to track your routes and monitor your progress. With multiple sport modes, it's the ideal companion for outdoor enthusiasts.",
-    "Price": 199.99
+    "Price": 199.99,
+    "AvailableStock": 0,
+    "RestockThreshold": 10,
+    "MaxStockThreshold": 200,
+    "OnReorder": false
   },
   {
     "Id": 100,
@@ -800,11 +804,15 @@
     "Price": 79.99
   },
   {
-    "Id": 101,
-    "Type": "Footwear",
-    "Brand": "Raptor Elite",
-    "Name": "Trek Xtreme Hiking Shoes",
-    "Description": "The Trek Xtreme hiking shoes by Raptor Elite are built to endure any trail. With their durable leather upper and rugged rubber sole, they offer excellent traction and protection. These shoes come in a timeless brown color that adds a touch of style to your outdoor adventures.",
-    "Price": 135.99
+    "Id": 102,
+    "Type": "Navigation",
+    "Brand": "Solstix",
+    "Name": "Absolutely Amazing Advanced Alpine Adventure Apparatus",
+    "Description": "An extraordinary advanced alpine adventure apparatus designed for the most demanding outdoor expeditions. This innovative device combines cutting-edge technology with rugged durability, featuring multiple sensors, GPS tracking, weather monitoring, and emergency communication capabilities for serious adventurers.",
+    "Price": 599.99,
+    "AvailableStock": 15,
+    "RestockThreshold": 5,
+    "MaxStockThreshold": 50,
+    "OnReorder": false
   }
 ]
