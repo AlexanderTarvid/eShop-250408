@@ -57,29 +57,16 @@ public static class OrdersApi
             return TypedResults.BadRequest("Empty GUID is not valid for request ID");
         }
 
-        var identifiedCommandType = typeof(IdentifiedCommand<,>).MakeGenericType(command.GetType(), typeof(bool));
-        var identifiedCommand = Activator.CreateInstance(identifiedCommandType, command, requestId);
-
-        var getGenericTypeNameMethod = identifiedCommandType.GetMethod("GetGenericTypeName");
-        var genericTypeName = getGenericTypeNameMethod?.Invoke(identifiedCommand, null);
-
-        var commandProperty = identifiedCommandType.GetProperty("Command");
-        var commandValue = commandProperty?.GetValue(identifiedCommand);
-        var orderNumberProperty = commandValue?.GetType().GetProperty("OrderNumber");
-        var orderNumber = orderNumberProperty?.GetValue(commandValue);
+        var identifiedCommand = new IdentifiedCommand<TCommand, bool>(command, requestId);
 
         services.Logger.LogInformation(
             "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
-            genericTypeName,
-            nameof(commandValue.OrderNumber),
-            orderNumber,
+            identifiedCommand.GetGenericTypeName(),
+            nameof(identifiedCommand.Command.OrderNumber),
+            identifiedCommand.Command.OrderNumber,
             identifiedCommand);
 
-        var sendMethod = services.Mediator.GetType().GetMethod("Send", new[] { identifiedCommandType });
-        var sendTask = (Task)services.Mediator.Send((dynamic)identifiedCommand);
-        await sendTask.ConfigureAwait(false);
-        var resultProperty = sendTask.GetType().GetProperty("Result");
-        var commandResult = (bool)resultProperty?.GetValue(sendTask);
+        var commandResult = await services.Mediator.Send(identifiedCommand);
 
         if (!commandResult)
         {
