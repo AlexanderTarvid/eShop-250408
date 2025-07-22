@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Http.HttpResults;
 using CardType = eShop.Ordering.API.Application.Queries.CardType;
 using Order = eShop.Ordering.API.Application.Queries.Order;
 
@@ -24,28 +24,12 @@ public static class OrdersApi
         CancelOrderCommand command,
         [AsParameters] OrderServices services)
     {
-        if (requestId == Guid.Empty)
-        {
-            return TypedResults.BadRequest("Empty GUID is not valid for request ID");
-        }
-
-        var requestCancelOrder = new IdentifiedCommand<CancelOrderCommand, bool>(command, requestId);
-
-        services.Logger.LogInformation(
-            "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
-            requestCancelOrder.GetGenericTypeName(),
-            nameof(requestCancelOrder.Command.OrderNumber),
-            requestCancelOrder.Command.OrderNumber,
-            requestCancelOrder);
-
-        var commandResult = await services.Mediator.Send(requestCancelOrder);
-
-        if (!commandResult)
-        {
-            return TypedResults.Problem(detail: "Cancel order failed to process.", statusCode: 500);
-        }
-
-        return TypedResults.Ok();
+        // Only unsharable code here (if any in future)
+        return await ShipOrCancelOrderAsync(
+            requestId,
+            command,
+            services,
+            "Cancel order failed to process.");
     }
 
     public static async Task<Results<Ok, BadRequest<string>, ProblemHttpResult>> ShipOrderAsync(
@@ -53,25 +37,53 @@ public static class OrdersApi
         ShipOrderCommand command,
         [AsParameters] OrderServices services)
     {
+        // Only unsharable code here (if any in future)
+        return await ShipOrCancelOrderAsync(
+            requestId,
+            command,
+            services,
+            "Ship order failed to process.");
+    }
+
+    private static async Task<Results<Ok, BadRequest<string>, ProblemHttpResult>> ShipOrCancelOrderAsync<TCommand>(
+        Guid requestId,
+        TCommand command,
+        OrderServices services,
+        string failMessage)
+        where TCommand : class
+    {
         if (requestId == Guid.Empty)
         {
             return TypedResults.BadRequest("Empty GUID is not valid for request ID");
         }
 
-        var requestShipOrder = new IdentifiedCommand<ShipOrderCommand, bool>(command, requestId);
+        var identifiedCommandType = typeof(IdentifiedCommand<,>).MakeGenericType(command.GetType(), typeof(bool));
+        var identifiedCommand = Activator.CreateInstance(identifiedCommandType, command, requestId);
+
+        var getGenericTypeNameMethod = identifiedCommandType.GetMethod("GetGenericTypeName");
+        var genericTypeName = getGenericTypeNameMethod?.Invoke(identifiedCommand, null);
+
+        var commandProperty = identifiedCommandType.GetProperty("Command");
+        var commandValue = commandProperty?.GetValue(identifiedCommand);
+        var orderNumberProperty = commandValue?.GetType().GetProperty("OrderNumber");
+        var orderNumber = orderNumberProperty?.GetValue(commandValue);
 
         services.Logger.LogInformation(
             "Sending command: {CommandName} - {IdProperty}: {CommandId} ({@Command})",
-            requestShipOrder.GetGenericTypeName(),
-            nameof(requestShipOrder.Command.OrderNumber),
-            requestShipOrder.Command.OrderNumber,
-            requestShipOrder);
+            genericTypeName,
+            nameof(commandValue.OrderNumber),
+            orderNumber,
+            identifiedCommand);
 
-        var commandResult = await services.Mediator.Send(requestShipOrder);
+        var sendMethod = services.Mediator.GetType().GetMethod("Send", new[] { identifiedCommandType });
+        var sendTask = (Task)services.Mediator.Send((dynamic)identifiedCommand);
+        await sendTask.ConfigureAwait(false);
+        var resultProperty = sendTask.GetType().GetProperty("Result");
+        var commandResult = (bool)resultProperty?.GetValue(sendTask);
 
         if (!commandResult)
         {
-            return TypedResults.Problem(detail: "Ship order failed to process.", statusCode: 500);
+            return TypedResults.Problem(detail: failMessage, statusCode: 500);
         }
 
         return TypedResults.Ok();
