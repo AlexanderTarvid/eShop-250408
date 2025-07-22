@@ -9,7 +9,6 @@ public class CatalogItem
     public int Id { get; set; }
 
     [Required]
-    [MaxLength(200)] // Changed from 50 to 200
     public string Name { get; set; }
 
     public string Description { get; set; }

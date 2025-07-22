@@ -9,9 +9,7 @@ public record CatalogItem(
     int CatalogBrandId,
     CatalogBrand CatalogBrand,
     int CatalogTypeId,
-    CatalogItemType CatalogType,
-    int AvailableStock // Add AvailableStock for warehouse status
-);
+    CatalogItemType CatalogType);
 
 public record CatalogResult(int PageIndex, int PageSize, int Count, List<CatalogItem> Data);
 public record CatalogBrand(int Id, string Brand);

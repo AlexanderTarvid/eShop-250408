@@ -49,41 +49,17 @@ public partial class CatalogContextSeed(
                 Price = source.Price,
                 CatalogBrandId = brandIdsByName[source.Brand],
                 CatalogTypeId = typeIdsByName[source.Type],
-                AvailableStock = source.Name == "Adventurer GPS Watch" ? 0 : 100,
+                AvailableStock = 100,
                 MaxStockThreshold = 200,
                 RestockThreshold = 10,
                 PictureFileName = $"{source.Id}.webp",
-            }).ToList();
-
-            // Add a new product with a very long multi-word title starting with 'Ab'
-            int maxTitleLength = typeof(CatalogItem)
-                .GetProperty("Name")
-                ?.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.MaxLengthAttribute), false)
-                .OfType<System.ComponentModel.DataAnnotations.MaxLengthAttribute>()
-                .FirstOrDefault()?.Length ?? 200;
-            string prefix = "Ab ";
-            string word = "word ";
-            int maxWords = (maxTitleLength - prefix.Length) / word.Length;
-            string longTitle = prefix + string.Concat(Enumerable.Repeat(word, maxWords)).TrimEnd();
-            if (longTitle.Length > maxTitleLength) longTitle = longTitle.Substring(0, maxTitleLength);
-            catalogItems.Add(new CatalogItem
-            {
-                Name = longTitle,
-                Description = "A product with a very long title for testing.",
-                Price = 123.45M,
-                CatalogBrandId = brandIdsByName.Values.First(),
-                CatalogTypeId = typeIdsByName.Values.First(),
-                AvailableStock = 50,
-                MaxStockThreshold = 200,
-                RestockThreshold = 10,
-                PictureFileName = "longtitle.webp",
-            });
+            }).ToArray();
 
             if (catalogAI.IsEnabled)
             {
-                logger.LogInformation("Generating {NumItems} embeddings", catalogItems.Count);
+                logger.LogInformation("Generating {NumItems} embeddings", catalogItems.Length);
                 IReadOnlyList<Vector> embeddings = await catalogAI.GetEmbeddingsAsync(catalogItems);
-                for (int i = 0; i < catalogItems.Count; i++)
+                for (int i = 0; i < catalogItems.Length; i++)
                 {
                     catalogItems[i].Embedding = embeddings[i];
                 }
