@@ -1,4 +1,4 @@
-﻿namespace eShop.WebAppComponents.Catalog;
+namespace eShop.WebAppComponents.Catalog;
 
 public record CatalogItem(
     int Id,
@@ -9,7 +9,9 @@ public record CatalogItem(
     int CatalogBrandId,
     CatalogBrand CatalogBrand,
     int CatalogTypeId,
-    CatalogItemType CatalogType);
+    CatalogItemType CatalogType,
+    int AvailableStock // Added property for stock
+);
 
 public record CatalogResult(int PageIndex, int PageSize, int Count, List<CatalogItem> Data);
 public record CatalogBrand(int Id, string Brand);

@@ -1,0 +1,182 @@
+diff --git a/src/Catalog.API/Setup/catalog.json b/src/Catalog.API/Setup/catalog.json
+index 1d1f5d0..2c5b8a9 100644
+--- a/src/Catalog.API/Setup/catalog.json
++++ b/src/Catalog.API/Setup/catalog.json
+@@ -788,6 +788,7 @@
+     "Type": "Navigation",
+     "Brand": "Solstix",
+     "Name": "Adventurer GPS Watch",
++    "AvailableStock": 0,
+     "Description": "Take navigation to the next level with the Solstix Adventurer GPS Watch. This sleek and durable watch, in midnight blue, features a built-in GPS, altimeter, and compass, allowing you to track your routes and monitor your progress. With multiple sport modes, it's the ideal companion for outdoor enthusiasts.",
+     "Price": 199.99
+   },
+diff --git a/src/WebApp/Components/Pages/Item/ItemPage.razor b/src/WebApp/Components/Pages/Item/ItemPage.razor
+index f61a11b..48edd9f 100644
+--- a/src/WebApp/Components/Pages/Item/ItemPage.razor
++++ b/src/WebApp/Components/Pages/Item/ItemPage.razor
+@@ -1,4 +1,4 @@
+-﻿@page "/item/{itemId:int}"
++@page "/item/{itemId:int}"
+ @using System.Net
+ @inject CatalogService CatalogService
+ @inject BasketState BasketState
+@@ -21,6 +21,9 @@
+             <form class="add-to-cart" method="post" @formname="add-to-cart" @onsubmit="@AddToCartAsync" data-enhance="@isLoggedIn">
+                 <AntiforgeryToken />
+                 <span class="price">$@item.Price.ToString("0.00")</span>
++                <span class="status @(item.AvailableStock > 0 ? "in-stock" : "out-of-stock")" style="margin-left:1rem;">
++                    @(item.AvailableStock > 0 ? $"In stock ({item.AvailableStock} units)" : "Out of stock")
++                </span>
+ 
+                 @if (isLoggedIn)
+                 {
+diff --git a/src/WebApp/Components/Pages/Item/ItemPage.razor.css b/src/WebApp/Components/Pages/Item/ItemPage.razor.css
+index c21fa93..c6b190a 100644
+--- a/src/WebApp/Components/Pages/Item/ItemPage.razor.css
++++ b/src/WebApp/Components/Pages/Item/ItemPage.razor.css
+@@ -1,4 +1,4 @@
+-﻿.item-details {
++.item-details {
+     padding: 0 5rem 0 10rem;
+     display: flex;
+     align-items: flex-start;
+@@ -30,6 +30,18 @@ img {
+     font-weight: 600;
+ }
+ 
++.status {
++    font-size: 1.1rem;
++    font-weight: 600;
++    margin-left: 1rem;
++}
++.status.in-stock {
++    color: #1ca81c;
++}
++.status.out-of-stock {
++    color: #d32f2f;
++}
++
+ .add-to-cart button {
+     background-color: black;
+     color: white;
+diff --git a/src/WebAppComponents/Catalog/CatalogListItem.razor b/src/WebAppComponents/Catalog/CatalogListItem.razor
+index e072d01..fe4077e 100644
+--- a/src/WebAppComponents/Catalog/CatalogListItem.razor
++++ b/src/WebAppComponents/Catalog/CatalogListItem.razor
+@@ -1,4 +1,4 @@
+-﻿@using eShop.WebAppComponents.Item
++@using eShop.WebAppComponents.Item
+ @inject IProductImageUrlProvider ProductImages
+ 
+ <div class="catalog-item">
+@@ -7,8 +7,16 @@
+             <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
+         </span>
+         <span class='catalog-product-content'>
+-            <span class='name'>@Item.Name</span>
+-            <span class='price'>$@Item.Price.ToString("0.00")</span>
++            <span class="title-price-row">
++                <span class="title-left">@FirstLineTitle</span>
++                <span class="price">$@Item.Price.ToString("0.00")</span>
++            </span>
++            <span class="title-status-row">
++                <span class="title-left">@SecondLineTitle</span>
++                <span class="status @(Item.AvailableStock > 0 ? "in-stock" : "out-of-stock")">
++                    @(Item.AvailableStock > 0 ? "In stock" : "Out of stock")
++                </span>
++            </span>
+         </span>
+     </a>
+ </div>
+@@ -19,4 +27,23 @@
+ 
+     [Parameter]
+     public bool IsLoggedIn { get; set; }
++
++    // Logic to split title into two lines, no word breaks
++    private string FirstLineTitle => GetTitleLines().first;
++    private string SecondLineTitle => GetTitleLines().second;
++
++    private (string first, string second) GetTitleLines()
++    {
++        // Choose a reasonable max for first line, e.g. 28 chars, but do not break words
++        var name = Item?.Name ?? string.Empty;
++        if (string.IsNullOrWhiteSpace(name)) return ("", "");
++        const int maxFirstLine = 28;
++        if (name.Length <= maxFirstLine)
++            return (name, "");
++        int lastSpace = name.LastIndexOf(' ', maxFirstLine);
++        if (lastSpace <= 0) lastSpace = maxFirstLine; // fallback: break at limit
++        var first = name.Substring(0, lastSpace).TrimEnd();
++        var second = name.Substring(lastSpace).TrimStart();
++        return (first, second);
++    }
+ }
+diff --git a/src/WebAppComponents/Catalog/CatalogListItem.razor.css b/src/WebAppComponents/Catalog/CatalogListItem.razor.css
+index 6d4e8f3..ce05d7e 100644
+--- a/src/WebAppComponents/Catalog/CatalogListItem.razor.css
++++ b/src/WebAppComponents/Catalog/CatalogListItem.razor.css
+@@ -1,4 +1,4 @@
+-﻿.catalog-item {
++.catalog-item {
+     flex-basis: calc(33.33% - 2.5rem);
+     flex-shrink: 0;
+     box-sizing: border-box;
+@@ -30,6 +30,57 @@
+     align-self: stretch;
+ }
+ 
++.catalog-product-content .title-price-row, .catalog-product-content .title-status-row {
++    display: flex;
++    flex-direction: row;
++    align-items: center;
++    justify-content: space-between;
++    width: 100%;
++    margin-bottom: 0px;
++}
++
++.catalog-product-content .title-left {
++    color: #000;
++    font-size: 1rem;
++    font-style: normal;
++    font-weight: 600;
++    line-height: 150%;
++    text-align: left;
++    white-space: nowrap;
++    overflow: hidden;
++    text-overflow: ellipsis;
++}
++
++.catalog-product-content .status {
++    font-size: 1rem;
++    font-weight: 600;
++    margin-left: auto;
++    padding-left: 0.5rem;
++}
++.catalog-product-content .status.in-stock {
++    color: #1ca81c;
++}
++.catalog-product-content .status.out-of-stock {
++    color: #d32f2f;
++}
++
++.catalog-product-content .title-price-row {
++    margin-bottom: 0.1rem;
++}
++.catalog-product-content .title-status-row {
++    margin-top: 0.1rem;
++}
++
++.catalog-product-content .price {
++    color: #444;
++    text-align: right;
++    font-size: 1rem;
++    font-style: normal;
++    font-weight: 600;
++    line-height: 150%;
++    margin-left: auto;
++}
++
+ .catalog-product-content .name {
+     color: #000;
+     font-size: 1rem;
