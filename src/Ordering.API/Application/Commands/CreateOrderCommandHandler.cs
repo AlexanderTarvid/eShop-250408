@@ -1,30 +1,20 @@
-﻿namespace eShop.Ordering.API.Application.Commands;
+namespace eShop.Ordering.API.Application.Commands;
 
 using eShop.Ordering.Domain.AggregatesModel.OrderAggregate;
 
 // Regular CommandHandler
-public class CreateOrderCommandHandler
+public class CreateOrderCommandHandler(IMediator mediator,
+    IOrderingIntegrationEventService orderingIntegrationEventService,
+    IOrderRepository orderRepository,
+    IIdentityService identityService,
+    ILogger<CreateOrderCommandHandler> logger)
     : IRequestHandler<CreateOrderCommand, bool>
 {
-    private readonly IOrderRepository _orderRepository;
-    private readonly IIdentityService _identityService;
-    private readonly IMediator _mediator;
-    private readonly IOrderingIntegrationEventService _orderingIntegrationEventService;
-    private readonly ILogger<CreateOrderCommandHandler> _logger;
-
-    // Using DI to inject infrastructure persistence Repositories
-    public CreateOrderCommandHandler(IMediator mediator,
-        IOrderingIntegrationEventService orderingIntegrationEventService,
-        IOrderRepository orderRepository,
-        IIdentityService identityService,
-        ILogger<CreateOrderCommandHandler> logger)
-    {
-        _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
-        _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
-        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
-        _orderingIntegrationEventService = orderingIntegrationEventService ?? throw new ArgumentNullException(nameof(orderingIntegrationEventService));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly IOrderRepository _orderRepository = orderRepository ?? throw new ArgumentNullException(nameof(orderRepository));
+    private readonly IIdentityService _identityService = identityService ?? throw new ArgumentNullException(nameof(identityService));
+    private readonly IMediator _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+    private readonly IOrderingIntegrationEventService _orderingIntegrationEventService = orderingIntegrationEventService ?? throw new ArgumentNullException(nameof(orderingIntegrationEventService));
+    private readonly ILogger<CreateOrderCommandHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public async Task<bool> Handle(CreateOrderCommand message, CancellationToken cancellationToken)
     {
@@ -54,15 +44,10 @@ public class CreateOrderCommandHandler
 
 
 // Use for Idempotency in Command process
-public class CreateOrderIdentifiedCommandHandler : IdentifiedCommandHandler<CreateOrderCommand, bool>
+public class CreateOrderIdentifiedCommandHandler(IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<CreateOrderCommand, bool>> logger) : IdentifiedCommandHandler<CreateOrderCommand, bool>(mediator, requestManager, logger)
 {
-    public CreateOrderIdentifiedCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<CreateOrderCommand, bool>> logger)
-        : base(mediator, requestManager, logger)
-    {
-    }
 
     protected override bool CreateResultForDuplicateRequest()
     {

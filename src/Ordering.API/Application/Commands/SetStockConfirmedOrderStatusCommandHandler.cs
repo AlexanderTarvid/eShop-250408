@@ -1,14 +1,8 @@
-﻿namespace eShop.Ordering.API.Application.Commands;
+namespace eShop.Ordering.API.Application.Commands;
 
 // Regular CommandHandler
-public class SetStockConfirmedOrderStatusCommandHandler : IRequestHandler<SetStockConfirmedOrderStatusCommand, bool>
+public class SetStockConfirmedOrderStatusCommandHandler(IOrderRepository orderRepository) : IRequestHandler<SetStockConfirmedOrderStatusCommand, bool>
 {
-    private readonly IOrderRepository _orderRepository;
-
-    public SetStockConfirmedOrderStatusCommandHandler(IOrderRepository orderRepository)
-    {
-        _orderRepository = orderRepository;
-    }
 
     /// <summary>
     /// Handler which processes the command when
@@ -21,28 +15,23 @@ public class SetStockConfirmedOrderStatusCommandHandler : IRequestHandler<SetSto
         // Simulate a work time for confirming the stock
         await Task.Delay(10000, cancellationToken);
 
-        var orderToUpdate = await _orderRepository.GetAsync(command.OrderNumber);
+        var orderToUpdate = await orderRepository.GetAsync(command.OrderNumber);
         if (orderToUpdate == null)
         {
             return false;
         }
 
         orderToUpdate.SetStockConfirmedStatus();
-        return await _orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
+        return await orderRepository.UnitOfWork.SaveEntitiesAsync(cancellationToken);
     }
 }
 
 
 // Use for Idempotency in Command process
-public class SetStockConfirmedOrderStatusIdentifiedCommandHandler : IdentifiedCommandHandler<SetStockConfirmedOrderStatusCommand, bool>
+public class SetStockConfirmedOrderStatusIdentifiedCommandHandler(IMediator mediator,
+    IRequestManager requestManager,
+    ILogger<IdentifiedCommandHandler<SetStockConfirmedOrderStatusCommand, bool>> logger) : IdentifiedCommandHandler<SetStockConfirmedOrderStatusCommand, bool>(mediator, requestManager, logger)
 {
-    public SetStockConfirmedOrderStatusIdentifiedCommandHandler(
-        IMediator mediator,
-        IRequestManager requestManager,
-        ILogger<IdentifiedCommandHandler<SetStockConfirmedOrderStatusCommand, bool>> logger)
-        : base(mediator, requestManager, logger)
-    {
-    }
 
     protected override bool CreateResultForDuplicateRequest()
     {
