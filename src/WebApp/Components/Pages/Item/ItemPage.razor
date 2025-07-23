@@ -1,4 +1,4 @@
-﻿@page "/item/{itemId:int}"
+@page "/item/{itemId:int}"
 @using System.Net
 @inject CatalogService CatalogService
 @inject BasketState BasketState
@@ -21,6 +21,9 @@
             <form class="add-to-cart" method="post" @formname="add-to-cart" @onsubmit="@AddToCartAsync" data-enhance="@isLoggedIn">
                 <AntiforgeryToken />
                 <span class="price">$@item.Price.ToString("0.00")</span>
+                <span class="status @(item.AvailableStock > 0 ? "in-stock" : "out-of-stock")" style="margin-left:1rem;">
+                    @(item.AvailableStock > 0 ? $"In stock ({item.AvailableStock} units)" : "Out of stock")
+                </span>
 
                 @if (isLoggedIn)
                 {

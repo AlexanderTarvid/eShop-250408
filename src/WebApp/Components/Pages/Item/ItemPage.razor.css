@@ -1,4 +1,4 @@
-﻿.item-details {
+.item-details {
     padding: 0 5rem 0 10rem;
     display: flex;
     align-items: flex-start;
@@ -28,6 +28,18 @@ img {
 .price {
     font-size: 1.6rem;
     font-weight: 600;
+}
+
+.status {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-left: 1rem;
+}
+.status.in-stock {
+    color: #1ca81c;
+}
+.status.out-of-stock {
+    color: #d32f2f;
 }
 
 .add-to-cart button {

@@ -1,4 +1,4 @@
-﻿@using eShop.WebAppComponents.Item
+@using eShop.WebAppComponents.Item
 @inject IProductImageUrlProvider ProductImages
 
 <div class="catalog-item">
@@ -7,8 +7,16 @@
             <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
         </span>
         <span class='catalog-product-content'>
-            <span class='name'>@Item.Name</span>
-            <span class='price'>$@Item.Price.ToString("0.00")</span>
+            <span class="title-price-row">
+                <span class="title-left">@FirstLineTitle</span>
+                <span class="price">$@Item.Price.ToString("0.00")</span>
+            </span>
+            <span class="title-status-row">
+                <span class="title-left">@SecondLineTitle</span>
+                <span class="status @(Item.AvailableStock > 0 ? "in-stock" : "out-of-stock")">
+                    @(Item.AvailableStock > 0 ? "In stock" : "Out of stock")
+                </span>
+            </span>
         </span>
     </a>
 </div>
@@ -19,4 +27,23 @@
 
     [Parameter]
     public bool IsLoggedIn { get; set; }
+
+    // Logic to split title into two lines, no word breaks
+    private string FirstLineTitle => GetTitleLines().first;
+    private string SecondLineTitle => GetTitleLines().second;
+
+    private (string first, string second) GetTitleLines()
+    {
+        // Choose a reasonable max for first line, e.g. 28 chars, but do not break words
+        var name = Item?.Name ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(name)) return ("", "");
+        const int maxFirstLine = 28;
+        if (name.Length <= maxFirstLine)
+            return (name, "");
+        int lastSpace = name.LastIndexOf(' ', maxFirstLine);
+        if (lastSpace <= 0) lastSpace = maxFirstLine; // fallback: break at limit
+        var first = name.Substring(0, lastSpace).TrimEnd();
+        var second = name.Substring(lastSpace).TrimStart();
+        return (first, second);
+    }
 }

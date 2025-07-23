@@ -788,6 +788,7 @@
     "Type": "Navigation",
     "Brand": "Solstix",
     "Name": "Adventurer GPS Watch",
+    "AvailableStock": 0,
     "Description": "Take navigation to the next level with the Solstix Adventurer GPS Watch. This sleek and durable watch, in midnight blue, features a built-in GPS, altimeter, and compass, allowing you to track your routes and monitor your progress. With multiple sport modes, it's the ideal companion for outdoor enthusiasts.",
     "Price": 199.99
   },
