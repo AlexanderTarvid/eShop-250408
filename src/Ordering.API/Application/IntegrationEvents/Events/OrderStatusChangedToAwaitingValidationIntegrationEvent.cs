@@ -1,4 +1,4 @@
-﻿namespace eShop.Ordering.API.Application.IntegrationEvents.Events;
+namespace eShop.Ordering.API.Application.IntegrationEvents.Events;
 
 public record OrderStatusChangedToAwaitingValidationIntegrationEvent : IntegrationEvent
 {
@@ -20,14 +20,4 @@ public record OrderStatusChangedToAwaitingValidationIntegrationEvent : Integrati
     }
 }
 
-public record OrderStockItem
-{
-    public int ProductId { get; }
-    public int Units { get; }
-
-    public OrderStockItem(int productId, int units)
-    {
-        ProductId = productId;
-        Units = units;
-    }
-}
+public record OrderStockItem(int ProductId, int Units);

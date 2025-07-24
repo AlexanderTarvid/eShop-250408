@@ -1,4 +1,4 @@
-﻿namespace eShop.Ordering.API.Application.IntegrationEvents.Events;
+namespace eShop.Ordering.API.Application.IntegrationEvents.Events;
 
 public record OrderStockRejectedIntegrationEvent : IntegrationEvent
 {
@@ -14,14 +14,4 @@ public record OrderStockRejectedIntegrationEvent : IntegrationEvent
     }
 }
 
-public record ConfirmedOrderStockItem
-{
-    public int ProductId { get; }
-    public bool HasStock { get; }
-
-    public ConfirmedOrderStockItem(int productId, bool hasStock)
-    {
-        ProductId = productId;
-        HasStock = hasStock;
-    }
-}
+public record ConfirmedOrderStockItem(int ProductId, bool HasStock);
