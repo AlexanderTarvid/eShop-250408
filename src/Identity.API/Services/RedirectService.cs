@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.WebUtilities;
-using System.Web;
+using System.Net;
 
 namespace eShop.Identity.API.Services
 {
-    public class RedirectService : IRedirectService
+    public class RedirectService(HashSet<string> whitelistedUris) : IRedirectService
     {
-        private readonly HashSet<string> _whitelistedUris;
-
-        public RedirectService(IWhitelistedUrisFactory whitelistedUrisFactory)
-        {
-            _whitelistedUris = whitelistedUrisFactory.GetWhitelistedUris();
-        }
 
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
@@ -37,7 +31,7 @@ namespace eShop.Identity.API.Services
                     return string.Empty;
 
                 // Decode the redirect URI properly to handle multiple encoding attacks
-                var decodedRedirectUri = HttpUtility.UrlDecode(redirectUriValue);
+                var decodedRedirectUri = WebUtility.UrlDecode(redirectUriValue);
                 if (string.IsNullOrWhiteSpace(decodedRedirectUri))
                     return string.Empty;
 
@@ -47,7 +41,7 @@ namespace eShop.Identity.API.Services
 
                 // Check if the redirect URI is in the whitelist
                 var redirectUriString = redirectUri.ToString();
-                if (!_whitelistedUris.Contains(redirectUriString))
+                if (!whitelistedUris.Contains(redirectUriString))
                     return string.Empty;
 
                 return redirectUriString;

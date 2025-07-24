@@ -40,8 +40,12 @@ builder.Services.AddIdentityServer(options =>
 builder.Services.Configure<eShop.Identity.API.Models.RedirectSettings>(
     builder.Configuration.GetSection(eShop.Identity.API.Models.RedirectSettings.SectionName));
 
-// Register WhitelistedUrisFactory as singleton
-builder.Services.AddSingleton<eShop.Identity.API.Services.IWhitelistedUrisFactory, eShop.Identity.API.Services.WhitelistedUrisFactory>();
+// Register whitelisted URIs HashSet as singleton
+builder.Services.AddSingleton<HashSet<string>>(serviceProvider =>
+{
+    var redirectSettings = serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<eShop.Identity.API.Models.RedirectSettings>>();
+    return new HashSet<string>(redirectSettings.Value.WhitelistedUris, StringComparer.OrdinalIgnoreCase);
+});
 
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
