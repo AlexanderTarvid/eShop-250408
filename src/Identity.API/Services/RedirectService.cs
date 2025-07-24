@@ -1,29 +1,62 @@
-﻿namespace eShop.Identity.API.Services
+using Microsoft.AspNetCore.WebUtilities;
+using System.Web;
+
+namespace eShop.Identity.API.Services
 {
     public class RedirectService : IRedirectService
     {
+        private readonly HashSet<string> _whitelistedUris;
+
+        public RedirectService(IWhitelistedUrisFactory whitelistedUrisFactory)
+        {
+            _whitelistedUris = whitelistedUrisFactory.GetWhitelistedUris();
+        }
+
         public string ExtractRedirectUriFromReturnUrl(string url)
         {
-            var decodedUrl = System.Net.WebUtility.HtmlDecode(url);
-            var results = Regex.Split(decodedUrl, "redirect_uri=");
-            if (results.Length < 2)
-                return "";
+            try
+            {
+                if (string.IsNullOrWhiteSpace(url))
+                    return string.Empty;
 
-            string result = results[1];
+                // Parse the URL using native ASP.NET Core URL handling
+                if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+                    return string.Empty;
 
-            string splitKey;
-            if (result.Contains("signin-oidc"))
-                splitKey = "signin-oidc";
-            else
-                splitKey = "scope";
+                // Extract query parameters safely
+                var queryParams = QueryHelpers.ParseQuery(uri.Query);
+                
+                // Look for redirect_uri parameter
+                if (!queryParams.TryGetValue("redirect_uri", out var redirectUriValues) || 
+                    redirectUriValues.Count == 0)
+                    return string.Empty;
 
-            results = Regex.Split(result, splitKey);
-            if (results.Length < 2)
-                return "";
+                // Consider only the first redirect URI to prevent confusion attacks
+                var redirectUriValue = redirectUriValues.First();
+                if (string.IsNullOrWhiteSpace(redirectUriValue))
+                    return string.Empty;
 
-            result = results[0];
+                // Decode the redirect URI properly to handle multiple encoding attacks
+                var decodedRedirectUri = HttpUtility.UrlDecode(redirectUriValue);
+                if (string.IsNullOrWhiteSpace(decodedRedirectUri))
+                    return string.Empty;
 
-            return result.Replace("%3A", ":").Replace("%2F", "/").Replace("&", "");
+                // Validate that the decoded URI is well-formed
+                if (!Uri.TryCreate(decodedRedirectUri, UriKind.Absolute, out var redirectUri))
+                    return string.Empty;
+
+                // Check if the redirect URI is in the whitelist
+                var redirectUriString = redirectUri.ToString();
+                if (!_whitelistedUris.Contains(redirectUriString))
+                    return string.Empty;
+
+                return redirectUriString;
+            }
+            catch
+            {
+                // Handle any errors gracefully by returning empty string
+                return string.Empty;
+            }
         }
     }
 }

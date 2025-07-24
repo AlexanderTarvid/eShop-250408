@@ -1,4 +1,4 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+var builder = WebApplication.CreateBuilder(args);
 
 builder.AddServiceDefaults();
 
@@ -35,6 +35,13 @@ builder.Services.AddIdentityServer(options =>
 .AddAspNetIdentity<ApplicationUser>()
 // TODO: Not recommended for production - you need to store your key material somewhere secure
 .AddDeveloperSigningCredential();
+
+// Configure RedirectSettings
+builder.Services.Configure<eShop.Identity.API.Models.RedirectSettings>(
+    builder.Configuration.GetSection(eShop.Identity.API.Models.RedirectSettings.SectionName));
+
+// Register WhitelistedUrisFactory as singleton
+builder.Services.AddSingleton<eShop.Identity.API.Services.IWhitelistedUrisFactory, eShop.Identity.API.Services.WhitelistedUrisFactory>();
 
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
