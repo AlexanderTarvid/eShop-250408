@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using eShop.Catalog.API.Services;
 using Pgvector;
 
@@ -49,7 +49,7 @@ public partial class CatalogContextSeed(
                 Price = source.Price,
                 CatalogBrandId = brandIdsByName[source.Brand],
                 CatalogTypeId = typeIdsByName[source.Type],
-                AvailableStock = 100,
+                AvailableStock = GetStockForProduct(source.Name),
                 MaxStockThreshold = 200,
                 RestockThreshold = 10,
                 PictureFileName = $"{source.Id}.webp",
@@ -69,6 +69,16 @@ public partial class CatalogContextSeed(
             logger.LogInformation("Seeded catalog with {NumItems} items", context.CatalogItems.Count());
             await context.SaveChangesAsync();
         }
+    }
+
+    private static int GetStockForProduct(string productName)
+    {
+        // Set specific stock levels for certain products
+        return productName switch
+        {
+            "Adventurer GPS Watch" => 0, // Out of stock as requested
+            _ => 100 // Default stock level for all other products
+        };
     }
 
     private class CatalogSourceEntry
