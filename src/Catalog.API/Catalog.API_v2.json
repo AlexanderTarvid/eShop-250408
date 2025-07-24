@@ -520,6 +520,15 @@
             }
           },
           {
+            "name": "orderBy",
+            "in": "query",
+            "description": "The ordering of items to return (name or price)",
+            "schema": {
+              "type": "string",
+              "default": null
+            }
+          },
+          {
             "name": "api-version",
             "in": "query",
             "description": "The API version, in the format 'major.minor'.",

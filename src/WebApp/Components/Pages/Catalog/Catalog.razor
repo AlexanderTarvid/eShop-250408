@@ -18,7 +18,7 @@
     {
         <div>
             <div class="catalog-items">
-                @foreach (var item in GetSortedItems(catalogResult.Data))
+                @foreach (var item in catalogResult.Data)
                 {
                     <CatalogListItem Item="@item" />
                 }
@@ -53,16 +53,6 @@
 
     static IEnumerable<int> GetVisiblePageIndexes(CatalogResult result)
         => Enumerable.Range(1, (int)Math.Ceiling(1.0 * result.Count / PageSize));
-
-    private IEnumerable<CatalogItem> GetSortedItems(IEnumerable<CatalogItem> items)
-    {
-        return OrderBy switch
-        {
-            "price" => items.OrderBy(x => x.Price),
-            "name" or null => items.OrderBy(x => x.Name),
-            _ => items.OrderBy(x => x.Name)
-        };
-    }
 
     protected override async Task OnInitializedAsync()
     {
