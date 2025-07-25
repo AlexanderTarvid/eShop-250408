@@ -808,18 +808,10 @@
     "Price": 135.99
   },
   {
-    "Id": 102,
-    "Type": "Electronics",
-    "Brand": "TechTrail",
-    "Name": "Adventurer GPS Watch",
-    "Description": "The Adventurer GPS Watch by TechTrail is the ultimate companion for outdoor enthusiasts. Featuring advanced GPS tracking, heart rate monitoring, and weather alerts, this rugged watch is built to withstand the toughest conditions. With a long-lasting battery and intuitive interface, you'll never lose your way on any adventure.",
-    "Price": 299.99
-  },
-  {
     "Id": 103,
     "Type": "Bags",
     "Brand": "Adventure Pro",
-    "Name": "Absolutely Amazing Adventure Backpack with Multiple Compartments and Weather Resistant Technology for Ultimate Outdoor Exploration",
+    "Name": "Absolutely Amazing Adventure Backpack Professional",
     "Description": "The Absolutely Amazing Adventure Backpack by Adventure Pro is designed for serious outdoor enthusiasts who demand the best. This premium backpack features multiple specialized compartments, weather-resistant technology, and ergonomic design for ultimate comfort during extended adventures. Built with high-quality materials and innovative features.",
     "Price": 189.99
   }

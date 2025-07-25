@@ -7,14 +7,9 @@
             <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
         </span>
         <span class='catalog-product-content'>
-            <span class='catalog-product-line'>
-                <span class='name'>@GetTitleFirstLine()</span>
-                <span class='price'>$@Item.Price.ToString("0.00")</span>
-            </span>
-            <span class='catalog-product-line'>
-                <span class='name-continuation'>@GetTitleContinuation()</span>
-                <span class='warehouse-status @GetStatusClass()'>@GetStatusText()</span>
-            </span>
+            <span class='name'>@Item.Name</span>
+            <span class='price'>$@Item.Price.ToString("0.00")</span>
+            <span class='warehouse-status @GetStatusClass()'>@GetStatusText()</span>
         </span>
     </a>
 </div>
@@ -26,41 +21,15 @@
     [Parameter]
     public bool IsLoggedIn { get; set; }
 
-    private const int MaxTitleLength = 25; // Adjust based on design needs
-
-    private string GetTitleFirstLine()
-    {
-        if (Item.Name.Length <= MaxTitleLength)
-            return Item.Name;
-
-        // Find the last space before the max length to avoid breaking words
-        int lastSpace = Item.Name.LastIndexOf(' ', MaxTitleLength);
-        if (lastSpace > 0)
-            return Item.Name.Substring(0, lastSpace);
-        
-        // If no space found, truncate at max length
-        return Item.Name.Substring(0, MaxTitleLength);
-    }
-
-    private string GetTitleContinuation()
-    {
-        if (Item.Name.Length <= MaxTitleLength)
-            return string.Empty;
-
-        int lastSpace = Item.Name.LastIndexOf(' ', MaxTitleLength);
-        if (lastSpace > 0)
-            return Item.Name.Substring(lastSpace + 1);
-        
-        return Item.Name.Substring(MaxTitleLength);
-    }
-
     private string GetStatusText()
     {
+        if (Item == null) return string.Empty;
         return Item.AvailableStock > 0 ? "In stock" : "Out of stock";
     }
 
     private string GetStatusClass()
     {
+        if (Item == null) return string.Empty;
         return Item.AvailableStock > 0 ? "in-stock" : "out-of-stock";
     }
 }
