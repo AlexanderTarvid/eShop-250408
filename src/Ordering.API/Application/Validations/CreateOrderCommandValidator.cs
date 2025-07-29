@@ -15,10 +15,7 @@ public class CreateOrderCommandValidator : AbstractValidator<CreateOrderCommand>
         RuleFor(command => command.CardTypeId).NotEmpty();
         RuleFor(command => command.OrderItems).Must(ContainOrderItems).WithMessage("No order items found");
 
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            logger.LogTrace("INSTANCE CREATED - {ClassName}", GetType().Name);
-        }
+        logger.LogTrace("INSTANCE CREATED - {ClassName}", GetType().Name);
     }
 
     private bool BeValidExpirationDate(DateTime dateTime)

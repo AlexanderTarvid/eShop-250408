@@ -1,7 +1,9 @@
 ﻿namespace eShop.Ordering.API.Application.IntegrationEvents.EventHandling;
+
 public class OrderStockRejectedIntegrationEventHandler(
     IMediator mediator,
-    ILogger<OrderStockRejectedIntegrationEventHandler> logger) : IIntegrationEventHandler<OrderStockRejectedIntegrationEvent>
+    ILogger<OrderStockRejectedIntegrationEventHandler> logger)
+    : IIntegrationEventHandler<OrderStockRejectedIntegrationEvent>
 {
     public async Task Handle(OrderStockRejectedIntegrationEvent @event)
     {

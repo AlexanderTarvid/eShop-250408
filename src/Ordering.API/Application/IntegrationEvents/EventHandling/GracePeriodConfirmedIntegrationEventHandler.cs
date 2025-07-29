@@ -2,7 +2,8 @@
 
 public class GracePeriodConfirmedIntegrationEventHandler(
     IMediator mediator,
-    ILogger<GracePeriodConfirmedIntegrationEventHandler> logger) : IIntegrationEventHandler<GracePeriodConfirmedIntegrationEvent>
+    ILogger<GracePeriodConfirmedIntegrationEventHandler> logger)
+    : IIntegrationEventHandler<GracePeriodConfirmedIntegrationEvent>
 {
     /// <summary>
     /// Event handler which confirms that the grace period

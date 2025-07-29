@@ -2,8 +2,8 @@
 
 public class OrderPaymentFailedIntegrationEventHandler(
     IMediator mediator,
-    ILogger<OrderPaymentFailedIntegrationEventHandler> logger) :
-    IIntegrationEventHandler<OrderPaymentFailedIntegrationEvent>
+    ILogger<OrderPaymentFailedIntegrationEventHandler> logger)
+    : IIntegrationEventHandler<OrderPaymentFailedIntegrationEvent>
 {
     public async Task Handle(OrderPaymentFailedIntegrationEvent @event)
     {

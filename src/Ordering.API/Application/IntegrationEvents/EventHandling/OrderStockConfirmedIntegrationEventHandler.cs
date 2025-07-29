@@ -2,8 +2,8 @@
 
 public class OrderStockConfirmedIntegrationEventHandler(
     IMediator mediator,
-    ILogger<OrderStockConfirmedIntegrationEventHandler> logger) :
-    IIntegrationEventHandler<OrderStockConfirmedIntegrationEvent>
+    ILogger<OrderStockConfirmedIntegrationEventHandler> logger)
+    : IIntegrationEventHandler<OrderStockConfirmedIntegrationEvent>
 {
     public async Task Handle(OrderStockConfirmedIntegrationEvent @event)
     {

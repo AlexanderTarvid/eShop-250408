@@ -13,73 +13,51 @@ using eShop.Ordering.API.Application.Models;
 using eShop.Ordering.API.Extensions;
 
 [DataContract]
-public class CreateOrderCommand
+public class CreateOrderCommand(List<BasketItem> basketItems, string userId, string userName, string city, string street, string state, string country, string zipcode,
+    string cardNumber, string cardHolderName, DateTime cardExpiration,
+    string cardSecurityNumber, int cardTypeId)
     : IRequest<bool>
 {
     [DataMember]
-    private readonly List<OrderItemDTO> _orderItems;
+    private readonly List<OrderItemDTO> _orderItems = basketItems.ToOrderItemsDTO().ToList();
 
     [DataMember]
-    public string UserId { get; private set; }
+    public string UserId { get; private set; } = userId;
 
     [DataMember]
-    public string UserName { get; private set; }
+    public string UserName { get; private set; } = userName;
 
     [DataMember]
-    public string City { get; private set; }
+    public string City { get; private set; } = city;
 
     [DataMember]
-    public string Street { get; private set; }
+    public string Street { get; private set; } = street;
 
     [DataMember]
-    public string State { get; private set; }
+    public string State { get; private set; } = state;
 
     [DataMember]
-    public string Country { get; private set; }
+    public string Country { get; private set; } = country;
 
     [DataMember]
-    public string ZipCode { get; private set; }
+    public string ZipCode { get; private set; } = zipcode;
 
     [DataMember]
-    public string CardNumber { get; private set; }
+    public string CardNumber { get; private set; } = cardNumber;
 
     [DataMember]
-    public string CardHolderName { get; private set; }
+    public string CardHolderName { get; private set; } = cardHolderName;
 
     [DataMember]
-    public DateTime CardExpiration { get; private set; }
+    public DateTime CardExpiration { get; private set; } = cardExpiration;
 
     [DataMember]
-    public string CardSecurityNumber { get; private set; }
+    public string CardSecurityNumber { get; private set; } = cardSecurityNumber;
 
     [DataMember]
-    public int CardTypeId { get; private set; }
+    public int CardTypeId { get; private set; } = cardTypeId;
 
     [DataMember]
     public IEnumerable<OrderItemDTO> OrderItems => _orderItems;
-
-    public CreateOrderCommand()
-    {
-        _orderItems = new List<OrderItemDTO>();
-    }
-
-    public CreateOrderCommand(List<BasketItem> basketItems, string userId, string userName, string city, string street, string state, string country, string zipcode,
-        string cardNumber, string cardHolderName, DateTime cardExpiration,
-        string cardSecurityNumber, int cardTypeId)
-    {
-        _orderItems = basketItems.ToOrderItemsDTO().ToList();
-        UserId = userId;
-        UserName = userName;
-        City = city;
-        Street = street;
-        State = state;
-        Country = country;
-        ZipCode = zipcode;
-        CardNumber = cardNumber;
-        CardHolderName = cardHolderName;
-        CardExpiration = cardExpiration;
-        CardSecurityNumber = cardSecurityNumber;
-        CardTypeId = cardTypeId;
-    }
 }
 
