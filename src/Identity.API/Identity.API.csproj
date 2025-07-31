@@ -33,6 +33,7 @@
     <None Include="Views\Diagnostics\Index.cshtml" />
     <None Include="Views\Grants\Index.cshtml" />
     <None Include="Views\Home\Index.cshtml" />
+
     <None Include="Views\Shared\Error.cshtml" />
     <None Include="Views\Shared\Redirect.cshtml" />
     <None Include="Views\Shared\_Layout.cshtml" />
@@ -54,5 +55,6 @@
   <ItemGroup>
     <Compile Include="..\Shared\MigrateDbContextExtensions.cs" Link="Extensions\MigrateDbContextExtensions.cs" />
     <Compile Include="..\Shared\ActivityExtensions.cs" Link="Extensions\ActivityExtensions.cs" />
+    <Compile Include="Configuration\RedirectUrisOptions.cs" />
   </ItemGroup>
 </Project>

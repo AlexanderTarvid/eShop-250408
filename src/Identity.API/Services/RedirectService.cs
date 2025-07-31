@@ -1,29 +1,35 @@
-﻿namespace eShop.Identity.API.Services
+﻿using System.Web;
+
+namespace eShop.Identity.API.Services;
+
+public class RedirectService(HashSet<string> whitelistedUris) : IRedirectService
 {
-    public class RedirectService : IRedirectService
+    public string ExtractRedirectUriFromReturnUrl(string url)
     {
-        public string ExtractRedirectUriFromReturnUrl(string url)
+        if (string.IsNullOrWhiteSpace(url))
         {
-            var decodedUrl = System.Net.WebUtility.HtmlDecode(url);
-            var results = Regex.Split(decodedUrl, "redirect_uri=");
-            if (results.Length < 2)
-                return "";
-
-            string result = results[1];
-
-            string splitKey;
-            if (result.Contains("signin-oidc"))
-                splitKey = "signin-oidc";
-            else
-                splitKey = "scope";
-
-            results = Regex.Split(result, splitKey);
-            if (results.Length < 2)
-                return "";
-
-            result = results[0];
-
-            return result.Replace("%3A", ":").Replace("%2F", "/").Replace("&", "");
+            return string.Empty;
         }
+
+        string redirectUri = string.Empty;
+        try
+        {
+            var decodedUrl = HttpUtility.UrlDecode(url);
+            var uri = new Uri(decodedUrl);
+            var query = HttpUtility.ParseQueryString(uri.Query);
+            redirectUri = query["redirect_uri"];
+
+            if (string.IsNullOrWhiteSpace(redirectUri) || !whitelistedUris.Contains(redirectUri))
+            {
+                return string.Empty;
+            }
+        }
+        catch (UriFormatException)
+        {
+            // Handle malformed URLs gracefully
+            return string.Empty;
+        }
+
+        return redirectUri;
     }
 }
