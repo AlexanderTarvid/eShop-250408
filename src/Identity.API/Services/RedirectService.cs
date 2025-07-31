@@ -1,4 +1,4 @@
-﻿using System.Web;
+﻿using Microsoft.AspNetCore.WebUtilities;
 
 namespace eShop.Identity.API.Services;
 
@@ -11,25 +11,28 @@ public class RedirectService(HashSet<string> whitelistedUris) : IRedirectService
             return string.Empty;
         }
 
-        string redirectUri = string.Empty;
         try
         {
-            var decodedUrl = HttpUtility.UrlDecode(url);
-            var uri = new Uri(decodedUrl);
-            var query = HttpUtility.ParseQueryString(uri.Query);
-            redirectUri = query["redirect_uri"];
+            var query = QueryHelpers.ParseQuery(new Uri(url).Query);
+            var redirectUri = query["redirect_uri"].FirstOrDefault();
 
-            if (string.IsNullOrWhiteSpace(redirectUri) || !whitelistedUris.Contains(redirectUri))
+            if (string.IsNullOrWhiteSpace(redirectUri))
             {
                 return string.Empty;
             }
+
+            var decodedRedirectUri = Uri.UnescapeDataString(redirectUri);
+
+            if (!Uri.TryCreate(decodedRedirectUri, UriKind.Absolute, out _))
+            {
+                return string.Empty;
+            }
+
+            return whitelistedUris.Contains(decodedRedirectUri) ? decodedRedirectUri : string.Empty;
         }
         catch (UriFormatException)
         {
-            // Handle malformed URLs gracefully
             return string.Empty;
         }
-
-        return redirectUri;
     }
 }
