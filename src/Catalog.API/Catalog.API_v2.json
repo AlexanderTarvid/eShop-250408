@@ -19,6 +19,7 @@
             "name": "ids",
             "in": "query",
             "description": "List of ids for catalog items to return",
+            "required": true,
             "schema": {
               "type": "array",
               "items": {
@@ -195,7 +196,8 @@
                 "$ref": "#/components/schemas/CatalogItem"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -447,7 +449,8 @@
                 "$ref": "#/components/schemas/CatalogItem"
               }
             }
-          }
+          },
+          "required": true
         },
         "responses": {
           "201": {
@@ -517,6 +520,14 @@
             "schema": {
               "type": "integer",
               "format": "int32"
+            }
+          },
+          {
+            "name": "orderBy",
+            "in": "query",
+            "description": "The ordering of items to return",
+            "schema": {
+              "type": "string"
             }
           },
           {

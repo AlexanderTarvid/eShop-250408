@@ -10,6 +10,19 @@
         </div>
         <div class="catalog-search-types">
             <div class="catalog-search-group">
+                <h3>Ordering</h3>
+                <div class="catalog-search-group-tags">
+                    <a href="@OrderByUri(null)"
+                       class="catalog-search-tag @(string.IsNullOrEmpty(OrderBy) ? "active" : "")">
+                        Name (A-Z)
+                    </a>
+                    <a href="@OrderByUri("price-asc")"
+                       class="catalog-search-tag @(OrderBy == "price-asc" ? "active" : "")">
+                        Price (Asc)
+                    </a>
+                </div>
+            </div>
+            <div class="catalog-search-group">
                 <h3>Brand</h3>
                 <div class="catalog-search-group-tags">
                     <a href="@BrandUri(null)"
@@ -51,6 +64,7 @@
     IEnumerable<CatalogItemType>? catalogItemTypes;
     [Parameter] public int? BrandId { get; set; }
     [Parameter] public int? ItemTypeId { get; set; }
+    [Parameter] public string? OrderBy { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
@@ -71,5 +85,11 @@
     {
         { "page", null },
         { "type", typeId },
+    });
+
+    private string OrderByUri(string? orderBy) => Nav.GetUriWithQueryParameters(new Dictionary<string, object?>()
+    {
+        { "page", null },
+        { "orderby", orderBy },
     });
 }
