@@ -30,6 +30,19 @@ img {
     font-weight: 600;
 }
 
+.status {
+    font-size: 1.2rem;
+    font-weight: 500;
+}
+
+.in-stock {
+    color: green;
+}
+
+.out-of-stock {
+    color: red;
+}
+
 .add-to-cart button {
     background-color: black;
     color: white;

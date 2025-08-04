@@ -49,6 +49,27 @@
     margin-left: auto;
 }
 
+.catalog-product-content .status {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.in-stock {
+    color: green;
+}
+
+.out-of-stock {
+    color: red;
+}
+
+.catalog-product-name-row,
+.catalog-product-status-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
 
 @media only screen and (max-width: 480px) { 
     .catalog-item {

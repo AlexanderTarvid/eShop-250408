@@ -806,5 +806,13 @@
     "Name": "Trek Xtreme Hiking Shoes",
     "Description": "The Trek Xtreme hiking shoes by Raptor Elite are built to endure any trail. With their durable leather upper and rugged rubber sole, they offer excellent traction and protection. These shoes come in a timeless brown color that adds a touch of style to your outdoor adventures.",
     "Price": 135.99
+  },
+  {
+    "Id": 102,
+    "Type": "Footwear",
+    "Brand": "Raptor Elite",
+    "Name": "Abominable Snowman's Legendary Hiking Boots for Extreme Weather Conditions and Unforgiving Terrains",
+    "Description": "These boots are fabled to be crafted from the hide of the Abominable Snowman himself, offering unparalleled warmth and protection. They are designed for the most extreme weather conditions and unforgiving terrains, ensuring your feet stay dry and comfortable. The boots feature a unique self-repairing material and provide a slight boost to your climbing abilities.",
+    "Price": 999.99
   }
 ]

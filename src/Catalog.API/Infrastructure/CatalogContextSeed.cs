@@ -41,18 +41,28 @@ public partial class CatalogContextSeed(
             var brandIdsByName = await context.CatalogBrands.ToDictionaryAsync(x => x.Brand, x => x.Id);
             var typeIdsByName = await context.CatalogTypes.ToDictionaryAsync(x => x.Type, x => x.Id);
 
-            var catalogItems = sourceItems.Select(source => new CatalogItem
+            var catalogItems = sourceItems.Select(source =>
             {
-                Id = source.Id,
-                Name = source.Name,
-                Description = source.Description,
-                Price = source.Price,
-                CatalogBrandId = brandIdsByName[source.Brand],
-                CatalogTypeId = typeIdsByName[source.Type],
-                AvailableStock = 100,
-                MaxStockThreshold = 200,
-                RestockThreshold = 10,
-                PictureFileName = $"{source.Id}.webp",
+                var catalogItem = new CatalogItem
+                {
+                    Id = source.Id,
+                    Name = source.Name,
+                    Description = source.Description,
+                    Price = source.Price,
+                    CatalogBrandId = brandIdsByName[source.Brand],
+                    CatalogTypeId = typeIdsByName[source.Type],
+                    AvailableStock = 100,
+                    MaxStockThreshold = 200,
+                    RestockThreshold = 10,
+                    PictureFileName = $"{source.Id}.webp",
+                };
+
+                if (catalogItem.Name == "Adventurer GPS Watch")
+                {
+                    catalogItem.AvailableStock = 0;
+                }
+
+                return catalogItem;
             }).ToArray();
 
             if (catalogAI.IsEnabled)
