@@ -1,15 +1,15 @@
-﻿<div class="catalog-item">
+@using eShop.WebAppComponents.Item
+@inject IProductImageUrlProvider ProductImages
+
+<div class="catalog-item">
     <a class="catalog-product" href="@ItemHelper.Url(Item)" data-enhance-nav="false">
-        <span class="catalog-product-image">
-            <img alt="@Item.Name" src="@ProductImages.GetProductImageUrl(Item)" />
+        <span class='catalog-product-image'>
+            <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
         </span>
-        <div class="catalog-product-content">
-            <div class="catalog-product-name-row">
-                <span class="name">@FirstLine</span>
-                <span class="price">$@Item.Price.ToString("0.00")</span>
-            </div>
-            <div class="catalog-product-status-row">
-                <span class="name">@SecondLine</span>
+        <div class='catalog-product-content'>
+            <span class='name'>@Item.Name</span>
+            <div class="price-container">
+                <span class='price'>$@Item.Price.ToString("0.00")</span>
                 @if (Item.AvailableStock > 0)
                 {
                     <span class="status in-stock">In stock</span>
@@ -29,51 +29,4 @@
 
     [Parameter]
     public bool IsLoggedIn { get; set; }
-
-    private string FirstLine { get; set; } = "";
-    private string SecondLine { get; set; } = "";
-
-    protected override void OnParametersSet()
-    {
-        base.OnParametersSet();
-        SplitName(Item.Name);
-    }
-
-    private void SplitName(string name)
-    {
-        const int maxLen = 25;
-        FirstLine = name;
-        SecondLine = string.Empty;
-
-        if (name.Length > maxLen)
-        {
-            var words = name.Split(' ');
-            var firstLine = new System.Text.StringBuilder();
-            var secondLine = new System.Text.StringBuilder();
-            bool isSecondLine = false;
-
-            foreach (var word in words)
-            {
-                if (!isSecondLine && (firstLine.Length + word.Length) > maxLen)
-                {
-                    isSecondLine = true;
-                }
-
-                if (isSecondLine)
-                {
-                    secondLine.Append(word).Append(' ');
-                }
-                else
-                {
-                    firstLine.Append(word).Append(' ');
-                }
-            }
-
-            if (secondLine.Length > 0)
-            {
-                FirstLine = firstLine.ToString().TrimEnd();
-                SecondLine = secondLine.ToString().TrimEnd();
-            }
-        }
-    }
 }
