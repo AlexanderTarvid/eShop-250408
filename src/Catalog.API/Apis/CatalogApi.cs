@@ -150,6 +150,8 @@ public static class CatalogApi
             .LongCountAsync();
 
         var itemsOnPage = await root
+            .Include(c => c.CatalogBrand)
+            .Include(c => c.CatalogType)
             .OrderBy(c => c.Name)
             .Skip(pageSize * pageIndex)
             .Take(pageSize)
@@ -163,7 +165,11 @@ public static class CatalogApi
         [AsParameters] CatalogServices services,
         [Description("List of ids for catalog items to return")] int[] ids)
     {
-        var items = await services.Context.CatalogItems.Where(item => ids.Contains(item.Id)).ToListAsync();
+        var items = await services.Context.CatalogItems
+            .Include(item => item.CatalogBrand)
+            .Include(item => item.CatalogType)
+            .Where(item => ids.Contains(item.Id))
+            .ToListAsync();
         return TypedResults.Ok(items);
     }
 
@@ -180,7 +186,10 @@ public static class CatalogApi
             });
         }
 
-        var item = await services.Context.CatalogItems.Include(ci => ci.CatalogBrand).SingleOrDefaultAsync(ci => ci.Id == id);
+        var item = await services.Context.CatalogItems
+            .Include(ci => ci.CatalogBrand)
+            .Include(ci => ci.CatalogType)
+            .SingleOrDefaultAsync(ci => ci.Id == id);
 
         if (item == null)
         {
@@ -259,6 +268,8 @@ public static class CatalogApi
         if (services.Logger.IsEnabled(LogLevel.Debug))
         {
             var itemsWithDistance = await services.Context.CatalogItems
+                .Include(c => c.CatalogBrand)
+                .Include(c => c.CatalogType)
                 .Select(c => new { Item = c, Distance = c.Embedding.CosineDistance(vector) })
                 .OrderBy(c => c.Distance)
                 .Skip(pageSize * pageIndex)
@@ -272,6 +283,8 @@ public static class CatalogApi
         else
         {
             itemsOnPage = await services.Context.CatalogItems
+                .Include(c => c.CatalogBrand)
+                .Include(c => c.CatalogType)
                 .OrderBy(c => c.Embedding.CosineDistance(vector))
                 .Skip(pageSize * pageIndex)
                 .Take(pageSize)

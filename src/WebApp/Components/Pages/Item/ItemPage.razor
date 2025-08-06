@@ -21,6 +21,7 @@
             <form class="add-to-cart" method="post" @formname="add-to-cart" @onsubmit="@AddToCartAsync" data-enhance="@isLoggedIn">
                 <AntiforgeryToken />
                 <span class="price">$@item.Price.ToString("0.00")</span>
+                <span class="stock-status @GetDetailedStockStatusClass()">@GetDetailedStockStatusText()</span>
 
                 @if (isLoggedIn)
                 {
@@ -106,5 +107,17 @@ else if (notFound)
     {
         var items = await BasketState.GetBasketItemsAsync();
         numInCart = items.FirstOrDefault(row => row.ProductId == ItemId)?.Quantity ?? 0;
+    }
+
+    private string GetDetailedStockStatusText()
+    {
+        if (item == null) return string.Empty;
+        return item.AvailableStock > 0 ? $"In stock ({item.AvailableStock} units)" : "Out of stock";
+    }
+
+    private string GetDetailedStockStatusClass()
+    {
+        if (item == null) return string.Empty;
+        return item.AvailableStock > 0 ? "in-stock" : "out-of-stock";
     }
 }

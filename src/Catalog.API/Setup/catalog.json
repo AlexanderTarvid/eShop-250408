@@ -806,5 +806,13 @@
     "Name": "Trek Xtreme Hiking Shoes",
     "Description": "The Trek Xtreme hiking shoes by Raptor Elite are built to endure any trail. With their durable leather upper and rugged rubber sole, they offer excellent traction and protection. These shoes come in a timeless brown color that adds a touch of style to your outdoor adventures.",
     "Price": 135.99
+  },
+  {
+    "Id": 102,
+    "Type": "Navigation",
+    "Brand": "AirStrider",
+    "Name": "Absolute Maximum Performance Ultra Advanced GPS",
+    "Description": "The Absolute Maximum Performance Ultra Advanced GPS by AirStrider represents the pinnacle of navigation technology. This cutting-edge device features military-grade precision, advanced satellite connectivity, and weather-resistant construction. With its ultra-bright display, extended battery life, and comprehensive mapping capabilities, this GPS unit is designed for the most demanding outdoor adventures and professional applications.",
+    "Price": 599.99
   }
 ]

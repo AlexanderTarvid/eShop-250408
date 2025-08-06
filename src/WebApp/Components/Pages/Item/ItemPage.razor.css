@@ -30,6 +30,19 @@ img {
     font-weight: 600;
 }
 
+.stock-status {
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.stock-status.in-stock {
+    color: #22c55e;
+}
+
+.stock-status.out-of-stock {
+    color: #ef4444;
+}
+
 .add-to-cart button {
     background-color: black;
     color: white;

@@ -7,8 +7,23 @@
             <img alt="@Item.Name" src='@ProductImages.GetProductImageUrl(Item)' />
         </span>
         <span class='catalog-product-content'>
-            <span class='name'>@Item.Name</span>
-            <span class='price'>$@Item.Price.ToString("0.00")</span>
+            <span class='name-and-price'>
+                <span class='name-line-1'>@GetFirstLineOfName()</span>
+                <span class='price'>$@Item.Price.ToString("0.00")</span>
+            </span>
+            @if (!string.IsNullOrEmpty(GetSecondLineOfName()))
+            {
+                <span class='name-and-status'>
+                    <span class='name-line-2'>@GetSecondLineOfName()</span>
+                    <span class='stock-status @GetStockStatusClass()'>@GetStockStatusText()</span>
+                </span>
+            }
+            else
+            {
+                <span class='status-only'>
+                    <span class='stock-status @GetStockStatusClass()'>@GetStockStatusText()</span>
+                </span>
+            }
         </span>
     </a>
 </div>
@@ -19,4 +34,32 @@
 
     [Parameter]
     public bool IsLoggedIn { get; set; }
+
+    private string GetFirstLineOfName()
+    {
+        var words = Item.Name.Split(' ');
+        if (words.Length <= 3) return Item.Name;
+        
+        var firstLine = string.Join(" ", words.Take(3));
+        return firstLine;
+    }
+
+    private string GetSecondLineOfName()
+    {
+        var words = Item.Name.Split(' ');
+        if (words.Length <= 3) return string.Empty;
+        
+        var secondLine = string.Join(" ", words.Skip(3));
+        return secondLine;
+    }
+
+    private string GetStockStatusText()
+    {
+        return Item.AvailableStock > 0 ? "In stock" : "Out of stock";
+    }
+
+    private string GetStockStatusClass()
+    {
+        return Item.AvailableStock > 0 ? "in-stock" : "out-of-stock";
+    }
 }
