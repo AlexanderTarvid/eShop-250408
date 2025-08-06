@@ -2,15 +2,8 @@
 
 namespace eShop.Identity.API.Services;
 
-public class RedirectService : IRedirectService
+public class RedirectService(HashSet<string> whitelistedUris) : IRedirectService
 {
-    private readonly WhitelistedUriService _whitelistedUriService;
-
-    public RedirectService(WhitelistedUriService whitelistedUriService)
-    {
-        _whitelistedUriService = whitelistedUriService;
-    }
-
     public string ExtractRedirectUriFromReturnUrl(string url)
     {
         try
@@ -28,20 +21,10 @@ public class RedirectService : IRedirectService
             if (string.IsNullOrWhiteSpace(redirectUri))
                 return string.Empty;
 
-            // Handle multiple encoding by repeatedly decoding until no change
-            string decoded = redirectUri;
-            string previousDecoded;
-            do
-            {
-                previousDecoded = decoded;
-                decoded = Uri.UnescapeDataString(decoded);
-            } while (decoded != previousDecoded);
-
-            if (!Uri.TryCreate(decoded, UriKind.Absolute, out var validatedUri))
+            if (!Uri.TryCreate(redirectUri, UriKind.Absolute, out var validatedUri))
                 return string.Empty;
 
-            var normalizedUri = validatedUri.ToString();
-            return _whitelistedUriService.WhitelistedUris.Contains(normalizedUri) ? normalizedUri : string.Empty;
+            return whitelistedUris.Contains(validatedUri.ToString()) ? validatedUri.ToString() : string.Empty;
         }
         catch
         {

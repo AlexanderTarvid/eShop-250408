@@ -1,5 +1,4 @@
 ﻿using eShop.Identity.API.Configuration;
-using eShop.Identity.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +39,11 @@ builder.Services.AddIdentityServer(options =>
 .AddDeveloperSigningCredential();
 
 builder.Services.Configure<RedirectOptions>(builder.Configuration.GetSection(RedirectOptions.SectionName));
-builder.Services.AddSingleton<WhitelistedUriService>();
+builder.Services.AddSingleton<HashSet<string>>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<RedirectOptions>>();
+    return new HashSet<string>(options.Value.WhitelistedUris, StringComparer.OrdinalIgnoreCase);
+});
 
 builder.Services.AddTransient<IProfileService, ProfileService>();
 builder.Services.AddTransient<ILoginService<ApplicationUser>, EFLoginService>();
