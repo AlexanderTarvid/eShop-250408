@@ -1,29 +1,51 @@
-﻿namespace eShop.Identity.API.Services
+﻿using Microsoft.AspNetCore.WebUtilities;
+
+namespace eShop.Identity.API.Services;
+
+public class RedirectService : IRedirectService
 {
-    public class RedirectService : IRedirectService
+    private readonly WhitelistedUriService _whitelistedUriService;
+
+    public RedirectService(WhitelistedUriService whitelistedUriService)
     {
-        public string ExtractRedirectUriFromReturnUrl(string url)
+        _whitelistedUriService = whitelistedUriService;
+    }
+
+    public string ExtractRedirectUriFromReturnUrl(string url)
+    {
+        try
         {
-            var decodedUrl = System.Net.WebUtility.HtmlDecode(url);
-            var results = Regex.Split(decodedUrl, "redirect_uri=");
-            if (results.Length < 2)
-                return "";
+            if (string.IsNullOrWhiteSpace(url))
+                return string.Empty;
 
-            string result = results[1];
+            var uri = new Uri(url, UriKind.RelativeOrAbsolute);
+            var query = QueryHelpers.ParseQuery(uri.Query);
+            
+            if (!query.TryGetValue("redirect_uri", out var redirectUris) || redirectUris.Count == 0)
+                return string.Empty;
 
-            string splitKey;
-            if (result.Contains("signin-oidc"))
-                splitKey = "signin-oidc";
-            else
-                splitKey = "scope";
+            var redirectUri = redirectUris[0];
+            if (string.IsNullOrWhiteSpace(redirectUri))
+                return string.Empty;
 
-            results = Regex.Split(result, splitKey);
-            if (results.Length < 2)
-                return "";
+            // Handle multiple encoding by repeatedly decoding until no change
+            string decoded = redirectUri;
+            string previousDecoded;
+            do
+            {
+                previousDecoded = decoded;
+                decoded = Uri.UnescapeDataString(decoded);
+            } while (decoded != previousDecoded);
 
-            result = results[0];
+            if (!Uri.TryCreate(decoded, UriKind.Absolute, out var validatedUri))
+                return string.Empty;
 
-            return result.Replace("%3A", ":").Replace("%2F", "/").Replace("&", "");
+            var normalizedUri = validatedUri.ToString();
+            return _whitelistedUriService.WhitelistedUris.Contains(normalizedUri) ? normalizedUri : string.Empty;
+        }
+        catch
+        {
+            return string.Empty;
         }
     }
 }
