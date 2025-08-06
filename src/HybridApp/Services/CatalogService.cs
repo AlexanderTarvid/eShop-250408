@@ -16,9 +16,9 @@ public class CatalogService(HttpClient httpClient) : ICatalogService
         return httpClient.GetFromJsonAsync<CatalogItem>(uri);
     }
 
-    public async Task<CatalogResult> GetCatalogItems(int pageIndex, int pageSize, int? brand, int? type)
+    public async Task<CatalogResult> GetCatalogItems(int pageIndex, int pageSize, int? brand, int? type, string orderBy = "name")
     {
-        var uri = GetAllCatalogItemsUri(remoteServiceBaseUrl, pageIndex, pageSize, brand, type);
+        var uri = GetAllCatalogItemsUri(remoteServiceBaseUrl, pageIndex, pageSize, brand, type, orderBy);
         var result = await httpClient.GetFromJsonAsync<CatalogResult>($"{uri}&api-version=2.0");
         return result!;
     }
@@ -51,7 +51,7 @@ public class CatalogService(HttpClient httpClient) : ICatalogService
         return result!;
     }
 
-    private static string GetAllCatalogItemsUri(string baseUri, int pageIndex, int pageSize, int? brand, int? type)
+    private static string GetAllCatalogItemsUri(string baseUri, int pageIndex, int pageSize, int? brand, int? type, string orderBy)
     {
         string filterQs = string.Empty;
 
@@ -63,7 +63,11 @@ public class CatalogService(HttpClient httpClient) : ICatalogService
         {
             filterQs += $"brand={brand.Value}&";
         }
+        if (!string.IsNullOrEmpty(orderBy))
+        {
+            filterQs += $"orderBy={orderBy}&";
+        }
 
-        return $"{baseUri}items?{filterQs}pageIndex={pageIndex}&pageSize={pageSize}&api-version=2.0";
+        return $"{baseUri}items?{filterQs}pageIndex={pageIndex}&pageSize={pageSize}";
     }
 }
