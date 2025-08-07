@@ -30,13 +30,22 @@
     align-self: stretch;
 }
 
-.name-and-price, .name-and-status, .status-only {
+.name-price-line {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
 }
 
-.name-line-1, .name-line-2 {
+.status-line {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: -1.5em;
+    position: relative;
+    z-index: 1;
+}
+
+.catalog-product-content .name {
     color: #000;
     font-size: 1rem;
     font-style: normal;
